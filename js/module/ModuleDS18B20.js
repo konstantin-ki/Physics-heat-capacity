@@ -1,21 +1,4 @@
 /**
- * Класс <AppUserError> наследует и расширяет возможности базового класса ошибок.
- * Класс добавляет поле с ошибками
- * Коды ошибок:
- * 0 - ошибка неизвестна;
- * 10 - не передан порт кнопки управления статусом SD карты
- * 11 - не передан порт светодиода индикации состояния статуса смонтирован/размонтирована SD карты
- * 12 - попытка обращения к размонтированной SD карте - > 'Error - accessing the unmounted SD'
- * 100 - код псевдошибки, используется при отсутствии ошибки для реализации логики применением исключений
- */
-class AppUserError extends Error {
-    constructor(_message, _code) {
-        super(_message); //наследуе поле с описанием ошибки
-        this.name = "AppUserError"; //переопределяем имя типа
-        this.Code = _code || 0; //поле с кодом ошибки
-    }
-}
-/**
  * Класс ClassDefined определяет константы используемые в проекте Logger 
  */
 class ClassDefined {
@@ -27,7 +10,7 @@ class ClassDefined {
         return 1;
     }
 
-    //алиас - '0', 'true', 'выключено'
+    //алиас - '0', 'false', 'выключено'
     static get OFF() {
         return 0;
     }
@@ -52,165 +35,16 @@ class ClassDefined {
         LED1.write(ClassDefined.OFF);
     }
 }
-/**
- * Класс <ClassSysConf> предназначен для системных операций и контроля платформы.
- * В том числе формирует работу с системной датой
- */
-class ClassSysConf {
-    constructor() {
-        //***************************Блок объявления полей класса****************************
 
-        //***************************Блок инициализирующих методов конструктора***************
-        E.setTimeZone(4); //установить временную зону - Самара
-    }
-    /**
-     * Метод геттер <DateCurrent> возвращает тестовую стороку текущей Дата/Время
-     */
-    get DateCurrent() {
-        return new Date().toString();
-    }
-    /**
-     * Метод сеттер <DateCurrent> устанавливает текущую Дата/Время
-     */
-    set DateCurrent(_argVal) {
-        let temp_date = (_argVal) => {
-            new Date(_argVal[0], _argVal[1], _argVal[2], _argVal[3], _argVal[4], _argVal[5], 0); //инициализировать системное время
-
-        };
-
-        temp_date(_argVal);
-    }
-    /**
-     * Метод геттер DateCurrentNow возвращает текущее время в миллесекундах 
-     */
-    get DateCurrentNow() {
-        return new Date().now();
-    }
-    /**
-     * Метод очищает экран LCD при старте программы
-     */
-    ClearLCD() {
-        g.clear(); //убрать стартовые надписи с экрана
-        g.flip(); //обновить экран
-    }
-}
-/**
- * Класс <ClassCtrlNRF> предназначен для управления радиоинтерфейсом микропроцессора.
- * У данного модуля возникают сбои в портах цифровых шин при работе данного радиомодуля
- * это связано что работа модуля может прервать на некоторое время (по прерыванию) работу 
- * других шин как аппаратных таки программных. В форуме Гордона он сам на это указывал 
- * одному из участников, от туда я и понял проблемы которые происходили в данной программе 
- * с участком кода где происходила инициализация датчика температуры DS18B20. Его протокол
- * чувствителе к задержкам. 
- */
-class ClassCtrlNRF {
-    constructor(_buttonPort, _ledPort) {
-
-        this.ButtonNRF = _buttonPort; // поле алиас порта на который повешена кнопка управления интерфейсом NRF
-        this.LedModeNRF = _ledPort; //поле алиас порта на который повещен светодиод режима NRF
-        this.TimeCyclePulseOFF = 900; //цикл ms пульсации светодиодом, указан длительность выключенного состояния LED кнопки
-        this.TimeCyclePulseON = 100; //цикл ms пульсации светодиодом, указан длительность выключенного состояния LED кнопки
-
-        this.FlagWorksNRF = true; //поле-флаг управление NRF интерфейсом, исх состояние BLE => работает
-
-        //***************************Блок инициализирующих методов конструктора***************
-        //digitalWrite(this.LedModeNRF, 1); //включить светодиод => BLE работает
-        this.StatusNRFLEDPulse();
-    }
-    /**
-     * Метод <SleepNRF> отправляет BLE интерфейс в sleep режим и выполняет сопутствующие действия
-     */
-    SleepNRF() {
-
-        NRF.sleep(); //отключить BLE интерфейс
-        this.FlagWorksNRF = false; //поле-флаг управление NRF интерфейсом установить в <false>
-        //digitalWrite(this.LedModeNRF, 0); //выключить светодиод => BLE выключен
-    }
-    /**
-     * Метод <WakeNRF> активирует BLE интерфейс и выполняет сопутствующие действия
-     */
-    WakeNRF() {
-
-        NRF.wake(); //включить BLE интерфейс
-        this.FlagWorksNRF = true; //поле-флаг управление NRF интерфейсом установить в <true>
-        //digitalWrite(this.LedModeNRF, 1); //выключить светодиод => BLE работает
-    }
-    /*
-     *	Метод <OnOffNRF> отправляет в спячку NRF интерфейс или пробуждает его.
-     *	Опирается на поле класса <FlagWorksNRF> - определяет режим
-     *	NRF sleep (false) или пробуждение wake (true)
-     */
-    OnOffNRF() {
-        if (this.FlagWorksNRF) {
-
-            NRF.sleep(); //отключить работу BLE
-            //digitalWrite(this.LedModeNRF, 0); //выключить светодиод
-        } else {
-            NRF.wake(); //включить работу BLE
-            //digitalWrite(this.LedModeNRF, 1); //включить светодиод
-        }
-        this.FlagWorksNRF = !this.FlagWorksNRF; //инвертировать флаг
-    }
-    /*
-     *	Мониторинг кнопки управляющей режимом работы NRF/BLE
-     */
-    MonitorButton() {
-        setWatch(this.OnOffNRF.bind(this), this.ButtonNRF, {
-            edge: "falling",
-            debounce: 50,
-            repeat: true
-        }); //срабатывает по отпусканию кнопки
-    }
-    /**
-     * Метод управляет сигнализацией состояния статуса BLE интерфейса
-     */
-    StatusNRFLEDPulse() {
-        setTimeout(() => {
-            if (this.FlagWorksNRF) {
-                analogWrite(this.LedModeNRF, 0.1, {
-                    freq: 100
-                });
-                setTimeout(() => {
-                    analogWrite(this.LedModeNRF, 0, {
-                        freq: 100
-                    });
-                    this.StatusNRFLEDPulse();
-                }, this.TimeCyclePulseON);
-            } else {
-                analogWrite(this.LedModeNRF, 0, {
-                    freq: 100
-                }); //выключить пульсацию светодиода
-                this.StatusNRFLEDPulse();
-            }
-        }, this.TimeCyclePulseOFF);
-    }
-
-}
-/**
- * Класс реализует базовые операции по созданию "софтверной" SPI шины
- */
-class ClassBaseSPIBus {
-    constructor() {
-        this.SPIbus = []; //массив объектов-шин SPI
-    }
-    /**
-     * 
-     */
-    InitBus(_mosi, _miso, _sck) {
-        let opt = { //создать временный объект с параметрашим создаваемой шины
-            mosi: _mosi,
-            miso: _miso,
-            sck: _sck
-        };
-
-        this.SPIbus.push(new SPI()); //создать шину
-        this.SPIbus[this.SPIbus.length - 1].setup(opt); //инициализировать созданную шину
-        /*DEBUG*/console.log(`DEBUG-> Create soft SPI bus. Index SPI soft bus: ${this.SPIbus.length - 1}`); //DEBUG
-        return this.SPIbus[this.SPIbus.length - 1]; //вернуть объект SPI созданной шины 
-    }
-}
 /**
  * Класс <ClassBaseSDcard> реализует базовые операции с SD картой
+ * Коды ошибок - см.константы класса < ClassGasMonitor_MQ >
+ * Коды ошибок:
+ * 0 - ошибка неизвестна;
+ * 10 - не передан порт кнопки управления статусом SD карты
+ * 11 - не передан порт светодиода индикации состояния статуса смонтирован/размонтирована SD карты
+ * 12 - попытка обращения к размонтированной SD карте - > 'Error - accessing the unmounted SD'
+ * 100 - код псевдоошибки, используется при отсутствии ошибки для реализации логики применением исключений
  */
 class ClassBaseSDcard {
     constructor(_spiBus, _csPin, _butInd, _ledInd) {
@@ -468,7 +302,7 @@ class ClassRun {
                 let str_temp_1 = 'Temp air :';
                 let str_temp_2 = ' C';
                 let str_result = str_temp_1 + str_curtemp + str_temp_2;
-                Terminal.println(str_result); /*вывестьи данные температуры на LCD*/
+                Terminal.println(str_result); /*вывести данные температуры на LCD*/
             },
             this.TimeCyclePrint);
     }
@@ -524,7 +358,7 @@ class ClassRun {
 
 let SysConf = new ClassSysConf(); //объект управляющий системными настройками
 let CtrlNRF = new ClassCtrlNRF(D11, A3 /*_buttonPort, _ledPort*/ ); //объект управляющий режимом NRF/BLE посредством кнопки
-let SPIarr = new ClassBaseSPIBus(); //создать объект-хранилище SPI шин (програмная реализация)
+let SPIarr = new ClassBaseSPIBus(); //создать объект-хранилище SPI шин (программная реализация)
 let SPI4 = SPIarr.InitBus(D7, D2, A5); //инициализировать шину SPI
 //let SD          = new ClassBaseSDcard(SPI4, A2, D12, A1); //создать объект для работы с SD картой
 //SD.CompleteWorkSD(D12); //запускаем отслеживание кнопки управления ручного размонтирования SD карты
