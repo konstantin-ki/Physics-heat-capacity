@@ -107,7 +107,9 @@ class ClassBaseSPIBus {
         
         ++this.IndexBus; //увеличить индекс шины
         
-        return {BusName: bus_name,
-                IdBus:   this.SPIbus.bus_name.idbus } //вернуть имя созданной шины и объект шину SPI
+        return {
+                BusName: bus_name, //имя созданной шины
+                IdBus:   this.SPIbus.bus_name.idbus //объект шина SPI
+            } 
     }
 }

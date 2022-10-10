@@ -4,20 +4,11 @@
  * прикладные классы  операциями чтения, записи, системными и др.
  * Класс в своей работе требует передачи ему объекта обслуживающего SPI шины в системе.
  * 
- *  * Для работы класса понадобятся пользовательские типы данных, в том числе для передачи параметров.
- * Далее представлены определения этих типов в соответствии с синтаксисом JSDoc.
- * @typedef  {Object} ObjectSPIBusParam - тип аргумента метода AddBus
- * @property {Object} mosi      1 - порт MOSI шины SPI, обязательное поле
- * @property {Object} miso      2 - порт MISO шины SPI, обязательное поле
- * @property {Object} sck       3 - порт SCK шины SPI, обязательное поле
- * 
- * @param {ObjectSPIBusParam}   _opt        1 - экземпляр класса ClassBaseSDcard
+ * @param {Object}              _spiBus     1 - объект класса SPI (Espruino)
  * @param {Object}              _csPin      2 - Pin отвечающий за сигнал CS карты  SD
- * @param {Object}              _butPin     3 - Pin отвечающий за кнопку
- * @param {Object}              _ledInd     4 - Pin отвечающий за индикацию
  */
 class ClassBaseSDcard {
-    constructor(_opt, _csPin, _butPin, _ledPin) {
+    constructor(_spiBus, _csPin) {
         //***************************Блок объявления полей класса****************************
         this.ClassErrorAppUser = require('ErrorAppUser'); //импортируем прикладной класс ошибок
 
@@ -29,11 +20,14 @@ class ClassBaseSDcard {
         }
         /*аргументы относящиеся к SPI шине проверяются на валидность в модуле ClassBaseSPIBus*/
         this.SD = {
-            SPIBusParam: _opt, //объект с параметрами SPI шины
-            CSpin: _csPin //объект Pin для формирования сигнала CS карты SD
+            SPIBus: _spiBus, //объект - SPI шины
+            CSpin:  _csPin //объект Pin для формирования сигнала CS карты SD
         };
+        /*TRANSFER ВНИМАНИЕ: код подлежит переносу в класс ClassMidleSDcard
         this.StatusButton = _butInd; //Pin кнопки, для ручного action unmount
         this.StatusInd = _ledPin; //Pin светодиода, отображение статуса unmount
+        */
+
         this._FlagStatusSD = false; //флаг характеризующий состояние SD карты mount/unmount
 
         //***************************Блок инициализирующих методов конструктора***************
@@ -78,8 +72,8 @@ class ClassBaseSDcard {
      * Метод ConnectSD "монтирует" карту SD
      */
     ConnectSD() {
-        E.connectSDCard(this.SD.SPIBusParam, this.SD.CSpin);
-        this.FlagStatusSD = true; //карта смонтирована
+        E.connectSDCard(this.SD.SPIBusParam, this.SD.CSpin); //инициализация SD карты в системе Espruino
+            this.FlagStatusSD = true; //карта смонтирована
         //*DEBUG*/ console.log(`DEBUG-> SD card mount`); //DEBUG
         //*DEBUG*/ Terminal.println(`SD card mount`); //DEBUG
     }
@@ -88,15 +82,19 @@ class ClassBaseSDcard {
      */
     DisconnectSD() {
         E.unmountSD();
+            this.FlagStatusSD = false; //карта размонтирована
+        /*TRANSFER ВНИМАНИЕ: код подлежит переносу в класс ClassMidleSDcard
         digitalWrite(this.StatusInd, 1); //включить светодиод сигнализирующий о размонтировании SD карты
-        this.FlagStatusSD = false; //карта размонтирована
+        TRANSFER*/
+
         //*DEBUG*/ console.log(`DEBUG-> SD card unmount`);
         //*DEBUG*/ Terminal.println(`SD card umount`);
     }
+    /*TRANSFER ВНИМАНИЕ: метод CompleteWorkSD ПОЛНОСТЬЮ подлежит переносу в класс ClassMidleSDcard
     /**
      * Метод CompleteWorkSD позволяет размонтировать карту в ручном режиме, нажав кнопку.
      * Для работы необходимо передать порт на котором работает кнопка
-     */
+     
     CompleteWorkSD() {
         //мониторим кнопку, сработка при отпускании кнопки
         setWatch(this.DisconnectSD.bind(this), this.StatusButton, {
@@ -104,8 +102,8 @@ class ClassBaseSDcard {
             debounce: 50,
             repeat: true
         });
-    }
-
+    }*/
+    
     /**
      * Метод <ViewListFiles> перенести в класс ClassBaseSDcard
      */
