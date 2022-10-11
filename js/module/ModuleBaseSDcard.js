@@ -4,25 +4,32 @@
  * прикладные классы  операциями чтения, записи, системными и др.
  * Класс в своей работе требует передачи ему объекта обслуживающего SPI шины в системе.
  * 
- * @param {Object}              _spiBus     1 - объект класса SPI (Espruino)
- * @param {Object}              _csPin      2 - Pin отвечающий за сигнал CS карты  SD
+ * @param {Object}              _spiBus     1 - объект ClassBaseSPIBus, см. модуль ModuleBaseSPI
+ * @param {Object}              _spiOpt     2 - объект содержащий Pin-ы шины SPI, объект типа ObjectSPIBusParam, см. модуль ModuleBaseSPI
+ * @param {Object}              _csPin      3 - Pin отвечающий за сигнал CS карты  SD
  */
 class ClassBaseSDcard {
-    constructor(_spiBus, _csPin) {
+    constructor(_spiBus, _spiOpt, _csPin) {
         //***************************Блок объявления полей класса****************************
         this.ClassErrorAppUser = require('ErrorAppUser'); //импортируем прикладной класс ошибок
 
-        /*проверить переданные аргументы шины на валидность*/
-        if (typeof (_csPin) === undefined || typeof (_butPin) === undefined || typeof (_ledPin) === undefined) {
-            //*DEBUG*/console.log("ClassBaseSDcard.ERROR_MSG_ARG_NOT_DEFINED");
-            throw new ClassErrorAppUser(ClassBaseSDcard.ERROR_MSG_ARG_NOT_DEFINED,
+        /*проверить переданные аргументы на валидность*/
+        if ( !(_spiBus instanceof ClassBaseSPIBus) ) {
+            throw new ClassErrorAppUser(ClassBaseSDcard.ERROR_MSG_ARG_NOT_DEFINED + ". Arg error: _spiBus",
+                                        ClassBaseSDcard.ERROR_CODE_ARG_NOT_DEFINED);
+        }
+        if ( typeof(_csPin) === undefined ) {
+            throw new ClassErrorAppUser(ClassBaseSDcard.ERROR_MSG_ARG_NOT_DEFINED + ". Arg error: _csPin",
                                         ClassBaseSDcard.ERROR_CODE_ARG_NOT_DEFINED);
         }
         /*аргументы относящиеся к SPI шине проверяются на валидность в модуле ClassBaseSPIBus*/
-        this.SD = {
-            SPIBus: _spiBus, //объект - SPI шины
-            CSpin:  _csPin //объект Pin для формирования сигнала CS карты SD
-        };
+        try{
+            this.SD.SPIBus = _spiBus.AddBus(_spiOpt); //сгенерировать объект SPI
+        } catch(e){
+            console.log(e.message); //описание исключения см. в модуле ModuleBaseSPI
+        }
+        this.SD.CSpin = _csPin; //объект Pin для формирования сигнала CS карты SD
+
         /*TRANSFER ВНИМАНИЕ: код подлежит переносу в класс ClassMidleSDcard
         this.StatusButton = _butInd; //Pin кнопки, для ручного action unmount
         this.StatusInd = _ledPin; //Pin светодиода, отображение статуса unmount
