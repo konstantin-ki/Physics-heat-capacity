@@ -95,8 +95,11 @@ class ClassBaseSPIBus {
      *                                          }
      */
     AddBus(_opt) {
-        const ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
+        /* данную конструкцию конструкцию расскоментировать в случае скачивания проекта с гитхаба, в таком случае
+           локальна библиотека будет недоступна*/
+        //const ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
         
+        const ClassErrorAppUser = require('ModuleAppError');
         /*проверить переданные параметры шины на валидность*/
         if ((typeof (_opt.mosi) === undefined) || (typeof (_opt.miso) === undefined) || (typeof (_opt.sck) === undefined)) {
             throw new ClassErrorAppUser(ClassBaseSPIBus.ERROR_MSG_ARG_MOSI_MISO_SCK_NOT_DEFINED,

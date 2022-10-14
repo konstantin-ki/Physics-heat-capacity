@@ -34,7 +34,11 @@ class ClassBaseSDcard {
      */
     constructor(_spiOpt, _csPin) {
         //***************************Блок объявления полей класса****************************
-        this.ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
+        /* данную конструкцию конструкцию расскоментировать в случае скачивания проекта с гитхаба, в таком случае
+           локальна библиотека будет недоступна*/
+        //this.ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
+        
+        this.ClassErrorAppUser = require('ModuleAppError');
 
         /*проверить переданные аргументы на валидность*/
         if ( typeof(_csPin) === undefined ) {
