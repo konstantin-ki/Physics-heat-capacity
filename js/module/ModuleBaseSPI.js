@@ -95,7 +95,7 @@ class ClassBaseSPIBus {
      *                                          }
      */
     AddBus(_opt) {
-        const ClassErrorAppUser = require('https://github.com/konstantin-ki/Espruino/blob/main/Library/ModuleAppError.js'); //импортируем прикладной класс ошибок
+        const ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
         
         /*проверить переданные параметры шины на валидность*/
         if ((typeof (_opt.mosi) === undefined) || (typeof (_opt.miso) === undefined) || (typeof (_opt.sck) === undefined)) {

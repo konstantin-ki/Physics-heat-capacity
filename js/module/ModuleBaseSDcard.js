@@ -34,7 +34,7 @@ class ClassBaseSDcard {
      */
     constructor(_spiOpt, _csPin) {
         //***************************Блок объявления полей класса****************************
-        this.ClassErrorAppUser = require('https://github.com/konstantin-ki/Espruino/blob/main/Library/ModuleAppError.js'); //импортируем прикладной класс ошибок
+        this.ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
 
         /*проверить переданные аргументы на валидность*/
         if ( typeof(_csPin) === undefined ) {
