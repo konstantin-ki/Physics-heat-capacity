@@ -86,12 +86,13 @@ class ClassBaseSPIBus {
      */
     static get ERROR_MSG_SPI_PIN_NOT_EXISTING() { return 'Error -> The SPI pin not existing'; }
     /**
+     * @method
      * Метод AddBus создает объект экземпляр класса SPI, как soft реализацию SPI шины.
      * Методу передается в качестве аргумента объект с параметрами создаваемой шины.
      * @param {ObjectSPIBusParam}   _opt        1 - объект с параметрами шины SPI
      * @returns {Object}            _retVal     1 - возвращаемый объект вида:
      *                                          { NameBus: bus_name, //имя созданной шины
-     *                                            IDbus:   this.SPIbus.bus_name.IDbus //объект шина SPI
+     *                                            IDbus:   this.SPIbus.bus_name.IDbus //объект шины SPI
      *                                          }
      */
     AddBus(_opt) {
