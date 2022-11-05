@@ -1,231 +1,189 @@
-/**
- * Класс <AppUserError> наследует и расширяет возможности базового класса ошибок.
- * Класс добавляет поле с ошибками
- * Коды ошибок:
- * 0 - ошибка неизвестна;
- * 10 - не передан порт кнопки управления статусом SD карты
- * 11 - не передан порт светодиода индикации состояния статуса смонтирован/размонтирована SD карты
- * 12 - попытка обращения к размонтированной SD карте - > 'Error - accessing the unmounted SD'
- * 100 - код псевдошибки, используется при отсутствии ошибки для реализации логики применением исключений
- */
-class AppUserError extends Error {
+class ErrorAppUser extends Error {
     constructor(_message, _code) {
-        super(_message); //наследуе поле с описанием ошибки
-        this.name = "AppUserError"; //переопределяем имя типа
+        this.message = _message;
+        this.name = "ErrorAppUser"; //переопределяем имя типа
         this.Code = _code || 0; //поле с кодом ошибки
     }
 }
-/**
- * Класс ClassDefined определяет константы используемые в проекте Logger 
- */
-class ClassDefined {
 
-    /******************************КОНСТАНТЫ КЛАССА*********************************/
-
-    //алиас - '1', 'true', 'включено'
-    static get ON() {
-        return 1;
-    }
-
-    //алиас - '0', 'true', 'выключено'
-    static get OFF() {
-        return 0;
-    }
-
-    /**
-     * Константа определяющая интервал времени записи на SD карту  данных 
-    */
-   static get CYCLE_TIME_LOGGER(){
-       return 20000; // 20 - секунд
-   }
-    /**
-     * Статический метод включающий подсветку LCD модуля Pixl.js
-     */
-    static LCD_LIGH_ON() {
-        LED1.write(ClassDefined.ON);
-    }
-
-    /**
-     * Статический метод выключающий подсветку LCD модуля Pixl.js
-     */
-    static LCD_LIGH_OFF() {
-        LED1.write(ClassDefined.OFF);
-    }
-}
-/**
- * Класс <ClassSysConf> предназначен для системных операций и контроля платформы.
- * В том числе формирует работу с системной датой
- */
-class ClassSysConf {
-    constructor() {
-        //***************************Блок объявления полей класса****************************
-
-        //***************************Блок инициализирующих методов конструктора***************
-        E.setTimeZone(4); //установить временную зону - Самара
-    }
-    /**
-     * Метод геттер <DateCurrent> возвращает тестовую стороку текущей Дата/Время
-     */
-    get DateCurrent() {
-        return new Date().toString();
-    }
-    /**
-     * Метод сеттер <DateCurrent> устанавливает текущую Дата/Время
-     */
-    set DateCurrent(_argVal) {
-        let temp_date = (_argVal) => {
-            new Date(_argVal[0], _argVal[1], _argVal[2], _argVal[3], _argVal[4], _argVal[5], 0); //инициализировать системное время
-
-        };
-
-        temp_date(_argVal);
-    }
-    /**
-     * Метод геттер DateCurrentNow возвращает текущее время в миллесекундах 
-     */
-    get DateCurrentNow() {
-        return new Date().now();
-    }
-    /**
-     * Метод очищает экран LCD при старте программы
-     */
-    ClearLCD() {
-        g.clear(); //убрать стартовые надписи с экрана
-        g.flip(); //обновить экран
-    }
-}
-/**
- * Класс <ClassCtrlNRF> предназначен для управления радиоинтерфейсом микропроцессора.
- * У данного модуля возникают сбои в портах цифровых шин при работе данного радиомодуля
- * это связано что работа модуля может прервать на некоторое время (по прерыванию) работу 
- * других шин как аппаратных таки программных. В форуме Гордона он сам на это указывал 
- * одному из участников, от туда я и понял проблемы которые происходили в данной программе 
- * с участком кода где происходила инициализация датчика температуры DS18B20. Его протокол
- * чувствителе к задержкам. 
- */
-class ClassCtrlNRF {
-    constructor(_buttonPort, _ledPort) {
-
-        this.ButtonNRF = _buttonPort; // поле алиас порта на который повешена кнопка управления интерфейсом NRF
-        this.LedModeNRF = _ledPort; //поле алиас порта на который повещен светодиод режима NRF
-        this.TimeCyclePulseOFF = 900; //цикл ms пульсации светодиодом, указан длительность выключенного состояния LED кнопки
-        this.TimeCyclePulseON = 100; //цикл ms пульсации светодиодом, указан длительность выключенного состояния LED кнопки
-
-        this.FlagWorksNRF = true; //поле-флаг управление NRF интерфейсом, исх состояние BLE => работает
-
-        //***************************Блок инициализирующих методов конструктора***************
-        //digitalWrite(this.LedModeNRF, 1); //включить светодиод => BLE работает
-        this.StatusNRFLEDPulse();
-    }
-    /**
-     * Метод <SleepNRF> отправляет BLE интерфейс в sleep режим и выполняет сопутствующие действия
-     */
-    SleepNRF() {
-
-        NRF.sleep(); //отключить BLE интерфейс
-        this.FlagWorksNRF = false; //поле-флаг управление NRF интерфейсом установить в <false>
-        //digitalWrite(this.LedModeNRF, 0); //выключить светодиод => BLE выключен
-    }
-    /**
-     * Метод <WakeNRF> активирует BLE интерфейс и выполняет сопутствующие действия
-     */
-    WakeNRF() {
-
-        NRF.wake(); //включить BLE интерфейс
-        this.FlagWorksNRF = true; //поле-флаг управление NRF интерфейсом установить в <true>
-        //digitalWrite(this.LedModeNRF, 1); //выключить светодиод => BLE работает
-    }
-    /*
-     *	Метод <OnOffNRF> отправляет в спячку NRF интерфейс или пробуждает его.
-     *	Опирается на поле класса <FlagWorksNRF> - определяет режим
-     *	NRF sleep (false) или пробуждение wake (true)
-     */
-    OnOffNRF() {
-        if (this.FlagWorksNRF) {
-
-            NRF.sleep(); //отключить работу BLE
-            //digitalWrite(this.LedModeNRF, 0); //выключить светодиод
-        } else {
-            NRF.wake(); //включить работу BLE
-            //digitalWrite(this.LedModeNRF, 1); //включить светодиод
-        }
-        this.FlagWorksNRF = !this.FlagWorksNRF; //инвертировать флаг
-    }
-    /*
-     *	Мониторинг кнопки управляющей режимом работы NRF/BLE
-     */
-    MonitorButton() {
-        setWatch(this.OnOffNRF.bind(this), this.ButtonNRF, {
-            edge: "falling",
-            debounce: 50,
-            repeat: true
-        }); //срабатывает по отпусканию кнопки
-    }
-    /**
-     * Метод управляет сигнализацией состояния статуса BLE интерфейса
-     */
-    StatusNRFLEDPulse() {
-        setTimeout(() => {
-            if (this.FlagWorksNRF) {
-                analogWrite(this.LedModeNRF, 0.1, {
-                    freq: 100
-                });
-                setTimeout(() => {
-                    analogWrite(this.LedModeNRF, 0, {
-                        freq: 100
-                    });
-                    this.StatusNRFLEDPulse();
-                }, this.TimeCyclePulseON);
-            } else {
-                analogWrite(this.LedModeNRF, 0, {
-                    freq: 100
-                }); //выключить пульсацию светодиода
-                this.StatusNRFLEDPulse();
-            }
-        }, this.TimeCyclePulseOFF);
-    }
-
-}
-/**
- * Класс реализует базовые операции по созданию "софтверной" SPI шины
- */
 class ClassBaseSPIBus {
+    /**
+     * @constructor
+     */
     constructor() {
-        this.SPIbus = []; //массив объектов-шин SPI
+        this.Instance = null; //поле на основе которого реализуется синглтон
+
+        this.SPIbus = {}; //контейнер объектов-шин SPI
+        this.Pattern = 'SPI'; //базовая часть всех ключей объектов-шин SPI, полное название получается конкатенацией с текущим индексом
+        this.IndexBus = 10; //начальный индекс soft шин, полный индекс будет вида SPI11, SPI12, SPI13 и т.д.
+
+        //далее инициализируем контейнер первыми тремя шинами которые предустановлены в Espruino
+        //это SPI1, SI2, SPI3. Свойство Used это индикатор использования шины
+        this.SPIbus.SPI1 = {
+            IDbus: SPI1,
+            Used: false
+        };
+        //this.SPIbus['SPI2'] = {IDbus: SPI2, Used: false};
+        //this.SPIbus['SPI3'] = {IDbus: SPI3, Used: false};
+
+        //реализация паттерна синглтон
+        if (this.Instance) {
+            return this.Instance;
+        } else {
+            ClassBaseSPIBus.prototype.Instance = this;
+        }
+    }
+    /***********************************************КОНСТАНТЫ КЛАССА***********************************************/
+    /**
+     * Константа ERROR_CODE_ARG_MOSI_MISO_SCK_NOT_DEFINED определяет КОД ошибки,
+     * которая может произойти при вызове метода AddBus в том случае если не был
+     * передан один или более портов MOSI, MISO, SCK необходимых для создания SPI шины
+     */
+    static get ERROR_CODE_ARG_MOSI_MISO_SCK_NOT_DEFINED() {
+        return 10;
     }
     /**
-     * 
+     * Константа ERROR_MSG_ARG_MOSI_MISO_SCK_NOT_DEFINED определяет СООБЩЕНИЕ ошибки,
+     * которая может      * произойти при вызове метода AddBus в том случае если не был
+     * передан один или более портов MOSI, MISO, SCK необходимых для создания SPI шины
      */
-    InitBus(_mosi, _miso, _sck) {
-        let opt = { //создать временный объект с параметрашим создаваемой шины
-            mosi: _mosi,
-            miso: _miso,
-            sck: _sck
-        };
+    static get ERROR_MSG_ARG_MOSI_MISO_SCK_NOT_DEFINED() {
+        return 'Error -> The MOSI, MISO, SCK port is not defined';
+    }
+    /**
+     * Константа ERROR_CODE_SPI_PIN_NOT_EXISTING определяет КОД ошибки, которая может
+     * произойти в случае если для создания SPI шины были переданы не существующие порты
+     * микроконтроллера, или занятые другими объектами
+     */
+    static get ERROR_CODE_SPI_PIN_NOT_EXISTING() {
+        return 20;
+    }
+    /**
+     * Константа ERROR_MSG_SPI_PIN_NOT_EXISTING определяет СООБЩЕНИЕ ошибки, которая может
+     * произойти в случае если для создания SPI шины были переданы не существующие порты
+     * микроконтроллера, или занятые другими объектами
+     */
+    static get ERROR_MSG_SPI_PIN_NOT_EXISTING() {
+        return 'Error -> The SPI pin not existing';
+    }
+    /**
+     * @method
+     * Метод AddBus создает объект экземпляр класса SPI, как soft реализацию SPI шины.
+     * Методу передается в качестве аргумента объект с параметрами создаваемой шины.
+     * @param {ObjectSPIBusParam}   _opt        1 - объект с параметрами шины SPI
+     * @returns {Object}            _retVal     1 - возвращаемый объект вида:
+     *                                          { NameBus: bus_name, //имя созданной шины
+     *                                            IDbus:   this.SPIbus.bus_name.IDbus //объект шины SPI
+     *                                          }
+     */
+    AddBus(_opt) {
+        /* данную конструкцию конструкцию расскоментировать в случае скачивания проекта с гитхаба, в таком случае
+           локальна библиотека будет недоступна*/
+        //const ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
 
-        this.SPIbus.push(new SPI()); //создать шину
-        this.SPIbus[this.SPIbus.length - 1].setup(opt); //инициализировать созданную шину
-        /*DEBUG*/console.log(`DEBUG-> Create soft SPI bus. Index SPI soft bus: ${this.SPIbus.length - 1}`); //DEBUG
-        return this.SPIbus[this.SPIbus.length - 1]; //вернуть объект SPI созданной шины 
+        const ClassErrorAppUser = require('ModuleAppError');
+        /*проверить переданные параметры шины на валидность*/
+        if ((typeof (_opt.mosi) === undefined) || (typeof (_opt.miso) === undefined) || (typeof (_opt.sck) === undefined)) {
+            throw new ClassErrorAppUser(ClassBaseSPIBus.ERROR_MSG_ARG_MOSI_MISO_SCK_NOT_DEFINED,
+                ClassBaseSPIBus.ERROR_CODE_ARG_MOSI_MISO_SCK_NOT_DEFINED);
+        }
+
+        if (!(_opt.mosi instanceof Pin) || !(_opt.miso instanceof Pin) || !(_opt.sck instanceof Pin)) {
+            throw new ClassErrorAppUser(ClassBaseSPIBus.ERROR_MSG_SPI_PIN_NOT_EXISTING,
+                ClassBaseSPIBus.ERROR_CODE_SPI_PIN_NOT_EXISTING);
+        }
+
+        /*все необходимые для создания шины параметры переданы -> создать и инициализировать новую шину*/
+        let bus_name = this.Pattern + this.IndexBus; //полное имя ключа текущей шины
+
+        this.SPIbus.bus_name = {
+            IDbus: new SPI(), //сгенерировать шину
+            Used: true //индикатор использования шины в true
+        };
+        this.SPIbus.bus_name.IDbus.setup(_opt); //инициализировать шину
+
+        ++this.IndexBus; //увеличить индекс шины
+
+        return {
+            NameBus: bus_name, //имя созданной шины
+            IDbus: this.SPIbus.bus_name.IDbus //объект шина SPI
+        };
     }
 }
-/**
- * Класс <ClassBaseSDcard> реализует базовые операции с SD картой
- */
+
 class ClassBaseSDcard {
-    constructor(_spiBus, _csPin, _butInd, _ledInd) {
-        //***************************Блок объявления полей класса****************************
+    /**
+     * @constructor
+     * @param {ObjectSPIBusParam}   _spiOpt   1 - объект содержащий Pin-ы шины SPI, объект типа ObjectSPIBusParam, см. модуль ModuleBaseSPI
+     * @param {Object}              _csPin    2 - Pin отвечающий за сигнал CS карты  SD
+     */
+    constructor(_spiOpt, _csPin) {
+        /* данную конструкцию конструкцию расскоментировать в случае скачивания проекта с гитхаба, в таком случае
+           локальна библиотека будет недоступна*/
+        //this.ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
+
+        this.ClassErrorAppUser = require('ModuleAppError');
+
+        /*проверить переданные аргументы на валидность*/
+        if (typeof (_csPin) === undefined) {
+            throw new ClassErrorAppUser(ClassBaseSDcard.ERROR_MSG_ARG_NOT_DEFINED + ". Arg error: _csPin",
+                ClassBaseSDcard.ERROR_CODE_ARG_NOT_DEFINED);
+        }
+
         this.SD = {
-            SPIbus: _spiBus,
-            CSpin: _csPin
-        };
-        this.StatusButton = _butInd;
-        this.StatusInd = _ledInd;
-        this._FlagStatusSD = false; //влаг характеризующий состояние SD карты mount/unmount
+            IDbus: {},
+            CSpin: {}
+        }; //хранит параметры физического интерфейса для подключения SD карты
+
+        /*аргументы относящиеся к SPI шине проверяются на валидность в модуле ClassBaseSPIBus*/
+        try {
+            this.SD.IDbus = SPIbus.AddBus(_spiOpt).IDbus; //сгенерировать объект SPI. ВНИМАНИЕ объект SPIbus - глобальный
+        } catch (e) {
+            console.log(e.message); //описание исключения см. в модуле ModuleBaseSPI
+        }
+        this.SD.CSpin = _csPin; //объект Pin для формирования сигнала CS карты SD
+
+        /*TRANSFER ВНИМАНИЕ: код подлежит переносу в класс ClassMidleSDcard
+        this.StatusButton = _butInd; //Pin кнопки, для ручного action unmount
+        this.StatusInd = _ledPin; //Pin светодиода, отображение статуса unmount
+        */
+
+        this._FlagStatusSD = false; //флаг характеризующий состояние SD карты mount/unmount
 
         //***************************Блок инициализирующих методов конструктора***************
         this.ConnectSD(); //смонтировать SD карту
+        /*TRANSFER ВНИМАНИЕ: код подлежит переносу в класс ClassMidleSDcard
         this.CompleteWorkSD(); //запустить мониторинг кнопки управления статусом SD карты (смонтирована/размонтирована)
+        */
+    }
+    /***********************************************КОНСТАНТЫ КЛАССА***********************************************/
+    /**
+     * Константа класса ERROR_CODE_ARG_NOT_DEFINED определяет КОД ошибки, которая может
+     * произойти если при передачи в конструктор не корректных аргументов
+     */
+    static get ERROR_CODE_ARG_NOT_DEFINED() {
+        return 10;
+    }
+    /**
+     * Константа класса ERROR_MSG_ARG_NOT_DEFINED определяет СООБЩЕНИЕ ошибки, которая может
+     * произойти если при передачи в конструктор не корректных аргументов
+     */
+    static get ERROR_MSG_ARG_NOT_DEFINED() {
+        return 'Error -> invalid arguments the constructor';
+    }
+    /**
+     * Константа класса ERROR_CODE_SD_UNMOUNTED определяет КОД ошибки, которая
+     * возникает при попытке вызвать операцию чтения/записи при размонтированной карте
+     */
+    static get ERROR_CODE_SD_UNMOUNTED() {
+        return 11;
+    }
+    /**
+     * Константа класса ERROR_MSG_SD_UNMOUNTED определяет СООБЩЕНИЕ ошибки, которая
+     * возникает при попытке вызвать операцию чтения/записи при размонтированной карте
+     */
+    static get ERROR_MSG_SD_UNMOUNTED() {
+        return 'Error -> accessing the unmounted SD';
     }
     /**
      * 
@@ -240,301 +198,85 @@ class ClassBaseSDcard {
         this._FlagStatusSD = _flag;
     }
     /***
-     * Метод "монтирует" карту SD и подключает к заданной SPI шине
+     * Метод ConnectSD "монтирует" карту SD в систему
      */
     ConnectSD() {
-        E.connectSDCard(this.SD.SPIbus, this.SD.CSpin);
+        E.connectSDCard(this.SD.IDbus, this.SD.CSpin); //инициализация SD карты в системе Espruino
         this.FlagStatusSD = true; //карта смонтирована
-        /*DEBUG*/
-        console.log(`DEBUG-> SD card mount`); //DEBUG
     }
     /**
-     * Метод "размонтирует" карту SD, готовя ее к извлечению
+     * Метод DisconnectSD "размонтирует" карту SD, готовя ее к извлечению
      */
     DisconnectSD() {
         E.unmountSD();
-        digitalWrite(this.StatusInd, 1); //включить светодиод сигнализирующий о размонтировании SD карты
         this.FlagStatusSD = false; //карта размонтирована
-        /*DEBUG*/
-        console.log(`DEBUG-> SD card unmount`);
+        /*TRANSFER ВНИМАНИЕ: код подлежит переносу в класс ClassMidleSDcard
+        digitalWrite(this.StatusInd, 1); //включить светодиод сигнализирующий о размонтировании SD карты
+        TRANSFER*/
+
+        //*DEBUG*/ console.log(`DEBUG-> SD card unmount`);
+        //*DEBUG*/ Terminal.println(`SD card umount`);
     }
+    /*TRANSFER ВНИМАНИЕ: метод CompleteWorkSD ПОЛНОСТЬЮ подлежит переносу в класс ClassMidleSDcard
     /**
-     * Метод позволяет размонтировать карту в ручном режиме, нажав кнопку.
+     * Метод CompleteWorkSD позволяет размонтировать карту в ручном режиме, нажав кнопку.
      * Для работы необходимо передать порт на котором работает кнопка
-     */
+     
     CompleteWorkSD() {
-        //размонтировать SD карту при нажатии кнопки, срабатывает по отпусканию
+        //мониторим кнопку, сработка при отпускании кнопки
         setWatch(this.DisconnectSD.bind(this), this.StatusButton, {
             edge: "falling",
             debounce: 50,
             repeat: true
         });
-    }
-    
+    }*/
+
     /**
      * Метод <ViewListFiles> перенести в класс ClassBaseSDcard
      */
     ViewListFiles() {
         if (this.FlagStatusSD) {
-            console.log(this.FS.readdirSync()); //вывести список файлов в консоль
+            //*DEBUG*/console.log(this.FS.readdirSync()); //вывести список файлов в консоль
+            return require("fs").readdirSync(); //вернуть список файлов/директорий
         } else {
-            throw new AppUserError('Error - accessing the unmounted SD', 12); //выбросить исключение, SD карта размонтирована
+            //выбросить исключение, SD карта размонтирована
+            throw new ClassErrorAppUser(ClassBaseSDcard.ERROR_MSG_SD_UNMOUNTED,
+                ClassBaseSDcard.ERROR_CODE_SD_UNMOUNTED);
         }
     }
 }
-/**
- * Класс <ClassLogger> является классом верхнего уровня по ерализации логгера температуры
- * и сопуствующих параметров.
- * <ClassLogger> - наследует от класса <ClassBaseSDcard>
- * В классе определены важнейшие параметры протоколирования температуры и других параметров
- * на SD карте.
- */
-class ClassLogger extends ClassBaseSDcard {
-    constructor(_spiBus, _csPin, _butInd, _ledInd, _sensTemp, _cycleLogger) {
-        super(_spiBus, _csPin, _butInd, _ledInd);
 
-        this.SensTemp = _sensTemp; //присвоить объект предоставляющий данные о температуре
-        this.FS = require("fs"); //подключить библиотеку работы с файлами
-        this.IdTimerLogger = undefined; //указатель на таймер периодической ф-и записи данных
-        this.CycleTimeLogger = _cycleLogger || 1000; //время периода записи данных на SD карту
-    }
-
-    /**
-     * 
-     */
-    Logger() {
-        if (this.FlagStatusSD) {
-            let date = new Date(); //получить объект хранящий timestamp
-            let csv_str = date.getFullYear().toString() +
-                '.' +
-                date.getMonth().toString() +
-                '.' +
-                date.getDate().toString() +
-                ';' +
-                date.getHours() +
-                ':' +
-                date.getMinutes() +
-                ':' +
-                date.getSeconds() +
-                ';' +
-                this.SensTemp.CurTemp.toFixed(2) +
-                ';' +
-                '\n'; //получить полный год
-            this.FS.appendFileSync('Data.csv', csv_str);
-        } else {
-            clearTimeout(this.IdTimerLogger); //прекратить запись данных т.к. SD карта размонтирована
-        }
-    }
-    /**
-     * 
-     */
-    LoggerCycleBind() {
-        this.IdTimerLogger = setInterval(this.Logger.bind(this), this.CycleTimeLogger); //запустить циклическую запись данных на SD карту
-
-    }
+let SPIbus = {};
+let sd = {};
+try {
+    console.log(`DEBUG>> new ClassBaseSPIBus()`);
+    SPIbus = new ClassBaseSPIBus();//new ClassSPIbus();
+} catch (e) {
+    console.log(e.message);
 }
-/***
- * Класс реализует базовые операции с датчиком температуры DS18B20, используя библиотеку-драйвер
- * Передаваемые параметры:
- * _owPort      - экземпляр шины OneWire
- * _sensRes     - разрешающая способность датчика, целое число от 9 до 11 
- * 
- */
-class ClassBaseTempeature {
-    /******************************КОНСТАНТЫ КЛАССА*********************************/
-
-    constructor(_owPort, _sensRes, _cycleTime) {
-
-        this.OW = new OneWire(_owPort); //создать программную шину OneWire для температурного датчика {D0}
-        this.DS18B20 = undefined; //это поле будет хранить экземпляр первого объекта-драйвера датчика DS18B20
-        this.Resolution = _sensRes; //задать разрешение датчика по температуре {10}        
-        this.FlagTempInit = false; //поле-флаг характеризует успех/неудачу инициализации датчика температуры true/false успешно/не успешно
-        this._FlagFinalInitDS18B20 = false; //флаг окончания процедуры инициализации
-        this.TimeCycleReInit = 20; //время в ms повторной инициализации датчика DS18B20        
-
-        this.CycleTimeReadTemp = _cycleTime || 1000; //задать период в ms считывания показания температуры термо-датчика {1000}
-        this.IdTimerTemp = undefined; //id таймера на считыание температуры
-
-        this._CurTemp = 0; //хранит текущую температуру полученную от датчика
-    }
-
-    //Метод эмулирует константу, равную максимальному количеству попыток инициализации датчика DS18B20
-    get COUNT_INIT_MAX() {
-        return 20;
-    }
-    /**
-     * Методы для работы с флагом который хранит состояние 
-     */
-    get FlagFinalInitDS18B20() {
-        return this._FlagFinalInitDS18B20; //вернуть значение флага
-    }
-    set FlagFinalInitDS18B20(_flag) {
-        this._FlagFinalInitDS18B20 = _flag;
-    }
-    /**
-     * Сеттер и геттер поля текущей температуры
-     */
-    get CurTemp() {
-        return this._CurTemp;
-    }
-    set CurTemp(_temp) {
-        this._CurTemp = _temp;
-    }
-    /**
-     * 
-     */
-    InitDS18B20() {
-        //const init_ds18b20 = (ms) =>  {return new Promise((resolve) => setTimeout(resolve, ms));};
-
-        const init_ds18b20 = () => {
-            //*DEBUG*/console.log(`Function init_ds18b20 create...`); //DEBUG
-            // проверяем создание статической переменной функции
-            if (typeof (init_ds18b20.static_counter_init) === 'undefined') {
-                // если нет ставим в ноль
-                init_ds18b20.static_counter_init = 0;
-                //*DEBUG*/console.log(`Static var create static_counter_init: ${init_ds18b20.static_counter_init} `) //DEBUG
-            }
-            //this.FlagTempInit           = false; //поле-флаг характеризует успех/неудачу инициализации датчика температуры true/false успешно/не успешно
-            if (!this.FlagTempInit) {
-                //*DEBUG*/console.log(`One if proiden...`);
-                if (init_ds18b20.static_counter_init < this.COUNT_INIT_MAX) {
-                    //*DEBUG*/ console.log(`Two if proiden...`);
-                    setTimeout(() => {
-                        Terminal.println(`N${init_ds18b20.static_counter_init+1} - attempt create driver...`);
-                        try {
-                            this.DS18B20 = require("DS18B20").connect(this.OW); //подключаемся к первому датчику температуры DS18B20}
-                        } catch (error) {
-                            //если инициализация завершилась неудачей                   
-                            Terminal.println(`N${init_ds18b20.static_counter_init+1} - error ` + error.message);
-                            Terminal.println('##########');
-                            /*DEBUG*/
-                            console.log(`N${init_ds18b20.static_counter_init+1} - catch error ` + error.message); //DEBUG
-
-                            ++init_ds18b20.static_counter_init; //увеличить счетчик попыток
-                            init_ds18b20();
-                        }
-                        this.FlagTempInit = true; //датчик температуры инициализирован
-                        this.FlagFinalInitDS18B20 = true; //установить флаг завершения инициализации
-
-                        Terminal.println(`N${init_ds18b20.static_counter_init+1} - Create driver successfully !`);
-                        Terminal.println('##########');
-                    }, this.TimeCycleReInit);
-                } else {
-                    Terminal.println(' ');
-                    Terminal.println('DS18B20 INIT CRASH !');
-                }
-            }
-        };
-        //*DEBUG*/console.log(`Start init_ds18b20 function...`); //DEBUGs
-        init_ds18b20(); //запускаем функцию  
-    }
-    /**
-     * 
-     */
-    ReadTemp() {
-        let temp_data = this.DS18B20.getTemp(); //вспомагательная переменная которая хранит "сырое" (до обработки)
-        this.CurTemp = (temp_data === null) ? this.CurTemp : temp_data; //обработать считанное значение температуры и записать в поле
-    }
-
-    /**
-     * Bind версия типа Bind, чтения данных температуры с первого датчика DS18B20
-     */
-    ReadTempCycleBind() {
-        this.IdTimerTemp = setInterval(this.ReadTemp.bind(this), this.CycleTimeReadTemp); //запускаем циклическое считываение показаний датчика
-    }
-}
-/*
- *
- */
-class ClassRun {
-    constructor(_objSys, _objCtrlNRF, _objReadTemp, _objLogger, _timeCyclePrint) {
-        this.ObjSys = _objSys; //присвоить полю объект управляющий системными установками
-        this.ObjCtrlNRF = _objCtrlNRF; //присвоить полю объект управления NRF интерфейсом
-        this.ObjReadTemp = _objReadTemp; //присвоить объект предоставляющий данные о температуре
-        this.ObjLogger = _objLogger; //присвоить объект логгер (выполняющий периодическую запись данных на SD карту)
-
-        this.TimeCyclePrint = _timeCyclePrint; //период в ms вывода показаний температуры на {1000}
-        this.IdTimerPrint = undefined; //id таймера на вывод данных на LCD
-
-        this.FixedTemp = 2; //присвоить ограничитель количества выводимых разрядов, данных температуры
-    }
-
-    /**
-     * Метод обеспечивает вывод данных на LCD экран в терминальном режиме
-     */
-    PrintTempLCD() {
-        IdTimerPrint = setInterval(() => { //запустить переодический вывод данных температуры на LCD
-                let str_curtemp = this.ObjReadTemp.CurTemp.toFixed(this.FixedTemp); //получить и отформатировать текущую температуру
-                let str_temp_1 = 'Temp air :';
-                let str_temp_2 = ' C';
-                let str_result = str_temp_1 + str_curtemp + str_temp_2;
-                Terminal.println(str_result); /*вывести данные температуры на LCD*/
-            },
-            this.TimeCyclePrint);
-    }
-    /**
-     * Основной инициализирующий метод класса
-     */
-    Init() {
-        this.ObjSys.ClearLCD(); //очистить LCD
-        ClassDefined.LCD_LIGH_ON(); //включить подсветку дисплея
-        Terminal.println('START PROGRAMM');
-
-        this.ObjCtrlNRF.MonitorButton(); //запустить мониторинг кнопки управления режимом BLE //DEBUG
-    }
-    /*
-     *	Метод класа выполняет основную бизнес-логику программы
-     */
-    Run() {
-
-        if (this.ObjReadTemp.FlagTempInit) {
-            this.ObjReadTemp.DS18B20.setRes(this.ObjReadTemp.Resolution); //установить точность преобразования температуры
-            this.ObjReadTemp.ReadTempCycleBind(); //запустить циклическое считывание температуры
-            this.PrintTempLCD(); //запустить циклическое отображение данных температуры на LCD
-            this.ObjLogger.LoggerCycleBind(); //запустить циклическую запись данных температуры на SD карту
-        } else {
-            Terminal.println(' ');
-            Terminal.println('DS18B20 INIT CRASH !');
-        }
-
-    }
-    /**
-     * 
-     */
-    Start() {
-        this.Init(); //инициализируем систему
-
-        const check_init = () => { //реализации ожидания окончания инициализации датчиков темературы
-            if (!this.ObjReadTemp.FlagFinalInitDS18B20) {
-                setTimeout(() => {
-                    /*DEBUG*/
-                    console.log('***check_init run...'); //DEBUG
-                    check_init();
-                }, 65);
-            } else {
-                this.Run(); //запускаем систему в автоматическом режиме
-            }
-        };
-        check_init(); //запускаем функцию
-    }
+try {
+    console.log(`DEBUG>> new ClassBaseSDcard({mosi:D7, miso:D2, sck:A5}, A4)`);
+    sd = new ClassBaseSDcard({mosi: D7, miso: D2, sck: A5}, A4);//new ClassSDcard({mosi: D7, miso: D2, sck: A5}, A4);
+} catch (e) {
+    console.log(e.message);
 }
 
-/*******************************************************************************************************************/
-/**********************************************СЕКЦИЯ СОЗДАНИЯ ЭКЗЕМПЛЯРОВ КЛАССОВ**********************************/
+console.log(`DEBUG>> logfile = E.openFile('log.csv', 'a')`);
+let logfile = E.openFile('log.csv', 'a');
+let f = () => {
+    console.log('Write data to logfile: ' + logfile.write(getTime() + "," + E.getTemperature() + "\r\n"));
+};
+console.log(`DEBUG>> digitalWrite(LED1, 1)`);
+digitalWrite(LED1, 1);
 
-let SysConf = new ClassSysConf(); //объект управляющий системными настройками
-let CtrlNRF = new ClassCtrlNRF(D11, A3 /*_buttonPort, _ledPort*/ ); //объект управляющий режимом NRF/BLE посредством кнопки
-let SPIarr = new ClassBaseSPIBus(); //создать объект-хранилище SPI шин (програмная реализация)
-let SPI4 = SPIarr.InitBus(D7, D2, A5); //инициализировать шину SPI
-//let SD          = new ClassBaseSDcard(SPI4, A2, D12, A1); //создать объект для работы с SD картой
-//SD.CompleteWorkSD(D12); //запускаем отслеживание кнопки управления ручного размонтирования SD карты
-let ReadTemp = new ClassBaseTempeature(D0, 10, 1000 /*_owPort, _sensRes, _cycleTime*/ ); //объект-драйвер датчика DS18B20
-let Logger = new ClassLogger(SPI4, A4, D12, A1, ReadTemp); //объект выполняющий периодическую запись данных на SD карту
-let Run = new ClassRun(SysConf, CtrlNRF, ReadTemp, Logger, 1000);
+console.log(`DEBUG>> descriptor logfile:  + ${logfile}`);
+f();
+f();
+f();
+logfile.close();
+logfile = undefined;
 
+console.log(`DEBUG>> sd.DisconnectSD()`);
 
-/*******************************************************************************************************************/
-/**********************************************RUN секция програмы*************************************************/
-ReadTemp.InitDS18B20(); //инициализировать датчик температуры DS18B20
-//*DEBUG*/Logger.ViewListFiles(); //DEBUG -> вывести список файлов SD карты
-Run.Start(); //запускаем систему
+sd.DisconnectSD(); // card can now be pulled out
+digitalWrite(LED1, 0); // led indicator off
