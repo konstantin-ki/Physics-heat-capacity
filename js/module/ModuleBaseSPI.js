@@ -42,7 +42,7 @@ class ClassBaseSPIBus {
      * @constructor
      */
     constructor() {
-        this.Instance = null; //поле на основе которого реализуется синглтон
+        //this.Instance = null; //поле на основе которого реализуется синглтон
 
         this.SPIbus = {}; //контейнер объектов-шин SPI
         this.Pattern = 'SPI'; //базовая часть всех ключей объектов-шин SPI, полное название получается конкатенацией с текущим индексом
@@ -51,8 +51,6 @@ class ClassBaseSPIBus {
         //далее инициализируем контейнер первыми тремя шинами которые предустановлены в Espruino
         //это SPI1, SI2, SPI3. Свойство Used это индикатор использования шины
         this.SPIbus.SPI1= {IDbus: SPI1, Used: false}; 
-        //this.SPIbus['SPI2'] = {IDbus: SPI2, Used: false};
-        //this.SPIbus['SPI3'] = {IDbus: SPI3, Used: false};
 
         //реализация паттерна синглтон
         if (this.Instance) {
@@ -99,18 +97,30 @@ class ClassBaseSPIBus {
     AddBus(_opt) {
         /* данную конструкцию конструкцию расскоментировать в случае скачивания проекта с гитхаба, в таком случае
            локальна библиотека будет недоступна*/
-        //const ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
+        //const _ClassAppError = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
         
-        const ClassErrorAppUser = require('ModuleAppError');
+        /* DEBUG>> конструкция на момент написания программы не работает !
+        const _ClassAppError = require('ModuleAppError');
+        */
+
         /*проверить переданные параметры шины на валидность*/
         if ((typeof (_opt.mosi) === undefined) || (typeof (_opt.miso) === undefined) || (typeof (_opt.sck) === undefined)) {
-            throw new ClassErrorAppUser(ClassBaseSPIBus.ERROR_MSG_ARG_MOSI_MISO_SCK_NOT_DEFINED,
-                                        ClassBaseSPIBus.ERROR_CODE_ARG_MOSI_MISO_SCK_NOT_DEFINED);
+            /* DEBUG>> конструкция на момент написания программы не работает !
+            throw new _ClassAppError(ClassBaseSPIBus.ERROR_MSG_ARG_MOSI_MISO_SCK_NOT_DEFINED,
+                                     ClassBaseSPIBus.ERROR_CODE_ARG_MOSI_MISO_SCK_NOT_DEFINED);
+            */
+           throw new ClassAppError(ClassBaseSPIBus.ERROR_MSG_ARG_MOSI_MISO_SCK_NOT_DEFINED,
+                                     ClassBaseSPIBus.ERROR_CODE_ARG_MOSI_MISO_SCK_NOT_DEFINED);
+            
         }
 
         if (!(_opt.mosi instanceof Pin) || !(_opt.miso instanceof Pin) || !(_opt.sck instanceof Pin)){
-            throw new ClassErrorAppUser(ClassBaseSPIBus.ERROR_MSG_SPI_PIN_NOT_EXISTING,
-                                        ClassBaseSPIBus.ERROR_CODE_SPI_PIN_NOT_EXISTING);
+            /* DEBUG>> конструкция на момент написания программы не работает !
+            throw new _ClassAppError(ClassBaseSPIBus.ERROR_MSG_SPI_PIN_NOT_EXISTING,
+                                     ClassBaseSPIBus.ERROR_CODE_SPI_PIN_NOT_EXISTING);
+            */
+           throw new ClassAppError(ClassBaseSPIBus.ERROR_MSG_SPI_PIN_NOT_EXISTING,
+                                   ClassBaseSPIBus.ERROR_CODE_SPI_PIN_NOT_EXISTING);
         }
 
         /*все необходимые для создания шины параметры переданы -> создать и инициализировать новую шину*/
@@ -130,4 +140,5 @@ class ClassBaseSPIBus {
             };
     }
 }
+
 exports = ClassBaseSPIBus; //экспортируем класс, ВНИМАНИЕ - именно класс а не объект!

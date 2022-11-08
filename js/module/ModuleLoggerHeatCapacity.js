@@ -12,38 +12,37 @@
  * SPIbus, OWbus, SDcard (глобальные контейнеры шин SPI и OW, объект для работы с SD картой)
  */
 class ClassLoggerHeatCapacity {
-
     /**
      * @constructor
      * @param {*} _spiPin 
      * @param {*} _csPin 
-     * @param {*} _owBusPin1 
-     * @param {*} _owBusPin2 
-     * @param {*} _owBusPin3 
+     * @param {*} _owBusPin1    - {OWpin: <Pin>} объект содержащий порт на котором будет работать датчик
+     * @param {*} _owBusPin2    - {OWpin: <Pin>} объект содержащий порт на котором будет работать датчик
+     * @param {*} _owBusPin3    - {OWpin: <Pin>} объект содержащий порт на котором будет работать датчик
      * @param {*} _btn1 
      * @param {*} _btn2 
      * @param {*} _ledPin 
      * @param {*} _buzPin 
      */
     constructor(_spiPin, _csPin, _owBusPin1, _owBusPin2, _owBusPin3, _btn1, _btn2, _ledPin, _buzPin) {
-
-        this._CS = _csPin; //pin сигнала CS карты SD
-        this._HandlerOWbus1 = new OneWire(_owBusPin1); //объект шины onewire первого термодатчика
-        this._HandlerOWbus2 = new OneWire(_owBusPin2); //объект шины onewire второго термодатчика
-        this._HandlerOWbus3 = new OneWire(_owBusPin3); //объект шины onewire третьего термодатчика
         this._Btn1 = _btn1; //pin кнопки ассоциированной с экспериментом №1
         this._Btn2 = _btn2; //pin кнопки ассоциированной с экспериментом №2
         this._Led = _ledPin; //pin светодиода сигнализирующий о выполняющимся эксперименте
         this._Buz = _buzPin; //pin пьезоизлучателя (сигнализирует о фазах эксперимента)
+        
+        // данную конструкцию конструкцию расскоментировать в случае скачивания проекта с гитхаба, в таком случае
+        // локальна библиотека будет недоступна
+        //this._ClassBaseDS18B20 = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleBaseDS18B20.js'); //импортируем прикладной класс ошибок
+        
+        /* DEBUG>> конструкция на момент написания программы не работает !
+        this._ClassBaseDS18B20 = require('ModuleBaseDS18B20'); //подключить класс (!) ClassBaseSPIBus
+        */
 
-        /* данную конструкцию конструкцию расскоментировать в случае скачивания проекта с гитхаба, в таком случае
-           локальна библиотека будет недоступна*/
-        //this.ClassSensTemp = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleBaseDS18B20.js'); //импортируем прикладной класс ошибок
-        this._ClassSensTemp = require('ModuleBaseDS18B20'); //подключить класс (!) ClassBaseSPIBus
-        this._SensTemp1 = new ClassBaseDS18B20(_HandlerOWbus1,);
-
+        this._SensTemp1 = new ClassBaseDS18B20(_owBusPin1, this.TEMP_SENS_RESOLUTION);
+        this._SensTemp2 = new ClassBaseDS18B20(_owBusPin2, this.TEMP_SENS_RESOLUTION);
+        /* DEBUG>> конструкция на момент написания программы не работает !
         this._ClassBaseSDcard = require('ModuleBaseSDcard'); //подключить класс (!) ClassBaseSDcard        
-
+        */
         this._IdTimerPhase1 = undefined; //указатель на таймер функции эксперимента №1
         this._IdTimerPhase1 = undefined; //указатель на таймер функции эксперимента №2
         this._IdTimerPhase3 = undefined; //указатель на таймер функции эксперимента №2
@@ -53,18 +52,24 @@ class ClassLoggerHeatCapacity {
         this._CountWriteFile = 0; //линейно-нарастающий счетчик записей в файле
 
         this._TempCool = 25; //поле хранит температуру "холодной" воды
-        this._TempTermos1Prev = 0; //поле хранит температуру термоса 1 предыдущего измерения
-        this._TempTermos1Curr = 70; //поле хранит температуру термоса 1 текущего измерения
-        this._TempTermos2Prev = 0; //поле хранит температуру термоса 2 предыдущего измерения
-        this._TempTermos2Curr = 70; //поле хранит температуру термоса 2 текущего измерения
+        this._TempTermos1 = [];
+        //this._TempTermos1Prev = 0; //поле хранит температуру термоса 1 предыдущего измерения
+        //this._TempTermos1Curr = 70; //поле хранит температуру термоса 1 текущего измерения
+        //this._TempTermos2Prev = 0; //поле хранит температуру термоса 2 предыдущего измерения
+        //this._TempTermos2Curr = 70; //поле хранит температуру термоса 2 текущего измерения
+
+        this._HandlerFile = undefined; //указатель на файл с данными измерениями
 
         try {
-            console.log(`DEBUG>> new ClassBaseSDcard(...)`);
+            //console.log(`DEBUG>> new ClassBaseSDcard(...)`);
+            /* DEBUG>> конструкция на момент написания программы не работает !
             this._SD = new _ClassBaseSDcard(_spiPin, _csPin); //создаем объект SD карты
+            */
+           this._SD = new ClassBaseSDcard(_spiPin, _csPin); //создаем объект SD карты
         } catch (e) {
             console.log(`ERROR>> ${e.Code}, ${e.message}`);
         }
-        this._HandlerFile = undefined; //указатель на файл с данными измерениями
+        
     }
     /*******************************************CONST********************************************/
     /** @const @type {number} */
@@ -81,37 +86,39 @@ class ClassLoggerHeatCapacity {
     get HEAT_LOSS_CONST_THERMOS_2() { return 0.00046; } //константа тепловых потерь второго термоса
     /** @const @type {string} */
     get NAME_DATA_FILE() { return 'data.csv'; } //константа тепловых потерь второго термоса
-    /*******************************************END CONST********************************************/
+    /*******************************************END CONST******************************************/
 
     /**
      * 
      */
     MeasurementCoolWater() {
-        PixelNRFmanagement.SleepNRF(); //отключаем BLE через вызов SleepNRF() глобального объекта PixelNRFmanagement
-            this._TempCool = this._HandlerOWbus1.Temp; //считать температуру "холодной" воды
-        PixelNRFmanagement.WakeNRF(); //включаем BLE через вызов WakeNRF() глобального объекта PixelNRFmanagement
+        this._TempCool = this._SensTemp1.Temp; //считать температуру "холодной" воды
+            console.log(`DEBUG>> Temp cool water: ${this._TempCool.toFixed(2)}`);
         
         ++this._CountCoolWater; //инкремент количества измерений температуры
         //отбрасываем первое измерение
         if(this._CountCoolWater>1){
             ++this._CountWriteFile; //индексировать счетчик записей в файле
             
-            console.log(`DEBUG>> E.openFile(data.csv, a)`);
+            //console.log(`DEBUG>> E.openFile(data.csv, a)`);
             this._HandlerFile = E.openFile(this.NAME_DATA_FILE, 'a'); //открыть файл в режиме добавления 
             
             //подготовить строку с данными для записи в файл
             let data_str =  this._CountWriteFile + ';' +
                             'Phase2' + ';' +
                             'Cool----' + ';' +
-                            Math.trunc(getTime()) + ';' +
-                            this._TempCool.toFixed(2) + ';'
-            _HandlerFile.write(data_str); //записать результаты измерения в файл
-            this._HandlerFile.close(); //закрыть файл
+                            Math.ceil(getTime()) + ';' +
+                            this._TempCool.toFixed(2) + ';' +
+                            '\r\n';
+            this._HandlerFile.write(data_str); //записать результаты измерения в файл
+                this._HandlerFile.close(); //закрыть файл
+                    this._HandlerFile = undefined; //сбросить указатель на файл
 
             if (this._CountCoolWater == this.COUNT_MEASUREMENTS_COOL_WATER) {
                 /* завершить измерение холодной воды */
                 clearInterval(this._IdTimerPhase2);
-                this._CountCoolWater = 0; //обнулить счетчик количества измерений "холодной" воды
+                    this._CountCoolWater = 0; //обнулить счетчик количества измерений "холодной" воды
+                        this._SD.DisconnectSD(); //размонтировать SD карту
                 
                 /*-сформировать двойной звуковой сигнал-*/
                 let beep_count = 4; //переменная помогает организовать двойной звуковой сигнал
@@ -120,16 +127,16 @@ class ClassLoggerHeatCapacity {
                 let beep_func = ()=>{
                     --beep_count;
                     if (beep_count > 0) {
-                        beep_flag = !beep_flag;
                         if (beep_flag) {
                             digitalWrite(this._Buz, beep_flag); //выключить звук
                         } else {
                             analogWrite(this._Buz, 0.5, {freq: 4000});
                         }
-                        setTimeout(f, 200); //взвести очередное исполнение setTimeout()
+                        beep_flag = !beep_flag;
+                        setTimeout(beep_func, 150); //взвести очередное исполнение setTimeout()
                     } 
-                }
-                setTimeout(beep_func, 200);
+                };
+                setTimeout(beep_func, 150);
             }
         }
     }
@@ -137,131 +144,163 @@ class ClassLoggerHeatCapacity {
      * 
      */
     MeasurementHotWater() {
-        PixelNRFmanagement.SleepNRF(); //отключаем BLE через вызов SleepNRF() глобального объекта PixelNRFmanagement
-            this._TempTermos1Prev = this._TempTermos1Curr; //обновить значение предыдущего значения
-            this._TempTermos1Curr = this._HandlerOWbus2.Temp; //считать температуру воды в термосе 1
-             
-        PixelNRFmanagement.WakeNRF(); //включаем BLE через вызов WakeNRF() глобального объекта PixelNRFmanagement
-
-        ++this._CountHotWater; //инкремент количества измерений температуры
-        //отбрасываем первые три измерения, т.к. первое недействительное, и нужно два сохранить
-        if (this._CountHotWater > 3) {
-        ++this._CountWriteFile; //индексировать счетчик записей в файле
-
-        console.log(`DEBUG>> E.openFile(data.csv, a)`);
-        this._HandlerFile = E.openFile(this.NAME_DATA_FILE, 'a'); //открыть файл в режиме добавления
-
-        //подготовить строку с данными для записи в файл
-        let data_str =  this._CountWriteFile + ';' +
-                        'Phase3' + ';' +
-                        'Thermos1' + ';' +
-                        Math.trunc(getTime()) + ';' +
-                        this._TempHotTermos1.toFixed(2) + ';'
-                        _HandlerFile.write(data_str); //записать результаты измерения в файл
-        _HandlerFile.write(data_str); //записать результаты измерения в файл
-        this._HandlerFile.close(); //закрыть файл
+        let loss_temperature = null; //текущая скорость изменения температуры
+        let loss_delta = null; //разница между текущей скоростью изменения температуры и константой тепловых потерь
         
-        /*-вычисляем разницу между константой тепловых потерь для данного термоса и текущей
-           скоростью падения температуры и сравниваем с 5% значением от константы тепловых потерь
-           данного термоса-*/
-        let temp_loss = (this._TempTermos1Prev - this._TempTermos1)/this.TIME_PERIOD_HOT_WATER;
-        let delta_temp_loss = Math.abs(temp_loss - this.HEAT_LOSS_CONST_THERMOS_2);
-        console.log(`DEBUG>> current loss = ${temp_loss}`);
-        if (delta_temp_loss <= this.HEAT_LOSS_CONST_THERMOS_2*0.05) {
-            /* завершить измерение температуры воды в термосе */
-            clearInterval(this._IdTimerPhase3);
-            this._CountHotWater = 0; //обнулить счетчик количества измерений воды в термосе
-
-            /*-сформировать двойной звуковой сигнал-*/
-            let beep_count = 4; //переменная помогает организовать двойной звуковой сигнал
-            let beep_flag = true;
-            analogWrite(this._Buz, 0.5, {
-                freq: 4000
-            }); //включить звуковой сигнал
-            let beep_func = () => {
-                --beep_count;
-                if (beep_count > 0) {
-                    if (beep_flag) {
-                        digitalWrite(this._Buz, beep_flag); //выключить звук
-                    } else {
-                        analogWrite(this._Buz, 0.5, { freq: 4000  });
-                    }
-                    beep_flag = !beep_flag;
-                    setTimeout(beep_func, 150); //взвести очередное исполнение setTimeout()
-                }
+        /* отбрасываем первое измерение */
+        if (this._CountHotWater < 1) {
+            let tmp = this._SensTemp2.Temp; //произвести "пустое" считывание
+                ++this._CountHotWater; //инкремент количества измерений температуры
+            return 0; //досрочный выход
+        }
+        this._TempTermos1.push(this._SensTemp2.Temp); //считать и записать температуру в массив значений
+            ++this._CountHotWater; //инкремент количества измерений температуры
+                console.log(`DEBUG>> ________N${this._CountHotWater} TEMP: ${this._TempTermos1[this._TempTermos1.length-1].toFixed(2)}`);
+        /* Подготовить строку с данными для записи в файл */
+        let data_str =  this._CountWriteFile + ';' +
+                            'Phase3' + ';' +
+                            'Thermos1' + ';' +
+                            Math.ceil(getTime()) + ';' +
+                            this._TempTermos1[this._TempTermos1.length-1].toFixed(2) + ';' +
+                            loss_temperature + ';' +
+                            loss_delta + ';' +
+                            '\r\n';
+        this._HandlerFile.write(data_str); //записать результаты измерения в файл
+            ++this._CountWriteFile; //индексировать счетчик записей в файле
+        /*
+            Проверка условия завершения эксперимента. Первым шагом выполняется проверка количества
+            измерений выполненных на текущий момент. Если 61 и более то выполняются следующие шаги.
+            Обоснование числа 61: при исследовании величины тепловых потерь термосов, было установлено
+            что измерение величины dT/dt, надежно определяется примерно на интервале времени 5 минут
+            и более. На момент проведения первых экспериментов был установлен "малый" интервал
+            измерений равный 5 секунд, что позволяет оперативно отслеживать и фиксировать температуру
+            но не позволяет "почуствовать" изменения dT/dt между измерениями, то был введен "большой"
+            интервал измерений равный 5 мин или 61 измеерние, т.к. интервал между первым и последним
+            измерениям в таком случае будет равен  N-1 * Tмал (61-1 * 5сек = 300 сек = 5 мин)
+        */
+        if( this._TempTermos1.length > 120 ){
+            if( this._TempTermos1.length == 121 ){
+                /* Cформировать одинарный звуковой сигнал */
+                analogWrite(this._Buz, 0.5, {freq: 4000}); //включить звуковой сигнал
+                    setTimeout(()=>{ digitalWrite(this._Buz, 0); }, 200); //выключить звуковой сигнал
             }
-            setTimeout(beep_func, 150);
+            /*
+                Вычисляем разницу между константой тепловых потерь для данного термоса и текущей
+                скоростью падения температуры
+            */
+            let length = this._TempTermos1.length; //текущая длина массива температур воды термоса
+                loss_temperature = (this._TempTermos1[length-121] - this._TempTermos1[length-1])/(this.TIME_PERIOD_HOT_WATER*120);
+                loss_delta = Math.abs(loss_temperature) - this.HEAT_LOSS_CONST_THERMOS_2;
+                    console.log(`DEBUG>> ______TEMP LOSS: ${loss_temperature}`);
+                    console.log(`DEBUG>> DELTA TEMP LOSS: ${loss_delta}`);
+            /*
+                Сравнить текущее значение dT/dt с 5% значением от константы тепловых потерь
+                данного термоса и если оно меньше завершить эксперимент
+            */
+            if (loss_delta <= this.HEAT_LOSS_CONST_THERMOS_2*0.05) {                
+                clearInterval(this._IdTimerPhase3); //остановить циклическое измерение температуры
+                    this._CountHotWater = 0; //обнулить счетчик количества измерений воды в термосе
+                        this._TempTermos1.length = 0; //обнулить массив измеренных значений
+                
+                this._HandlerFile.close(); //закрыть файл
+                    this._HandlerFile = undefined; //сбросить указатель на файл
+                        this._SD.DisconnectSD(); //размонтировать SD карту
+                
+                /*-сформировать двойной звуковой сигнал сигнализирующий о завершении эксперимента-*/
+                let beep_count = 4; //переменная помогает организовать двойной звуковой сигнал
+                let beep_flag = true;
+                analogWrite(this._Buz, 0.5, { freq : 4000 }); //включить звуковой сигнал
+                let beep_func = ()=>{
+                    --beep_count;
+                    if (beep_count > 0) {
+                        if (beep_flag) {
+                            digitalWrite(this._Buz, beep_flag); //выключить звук
+                        } else {
+                        analogWrite(this._Buz, 0.5, {freq: 4000});
+                        }
+                        beep_flag = !beep_flag;
+                        setTimeout(beep_func, 150); //взвести очередное исполнение setTimeout()
+                    } 
+                };
+                setTimeout(beep_func, 150);
+            }
         }
     }
+    /**
+     * 
+     */
+    MonitorPhase2Start(){
+        setWatch(this.Phase2.bind(this), this._Btn2, {
+            edge: "falling",
+            debounce: 50,
+            repeat: true
+        }); //срабатывает по отпусканию кнопки
     }
     /**
      * 
      */
-    MonitorExp1Start(){
-
+    MonitorPhase2Stop(){
+        clearInterval(this._IdTimerPhase2);
+        
+        if(this._HandlerFile !== undefined){
+            this._HandlerFile.close(); //закрыть файл
+                this._HandlerFile = undefined; //сбросить указатель на файл
+        }
+        this._SD.DisconnectSD(); //размонтировать SD карту
     }
     /**
      * 
      */
-    MonitorExp1Stop(){
-
+    MonitorPhase3Start(){
+        setWatch(this.Phase3.bind(this), this._Btn1, {
+            edge: "falling",
+            debounce: 50,
+            repeat: true
+        }); //срабатывает по отпусканию кнопки
     }
     /**
-     * 
+     * Метод обеспечивает жесткое прерывание выполнение эксперемента фазы 3
      */
-    MonitorExp2Start(){
-
-    }
-    /**
-     * 
-     */
-    MonitorExp2Stop(){
-
-    }
-    /**
-     * 
-     */
-    Phase1(){
+    MonitorPhase3Stop(){
+        clearInterval(this._IdTimerPhase3);
+        
+        if(this._HandlerFile !== undefined){
+            this._HandlerFile.close(); //закрыть файл
+                this._HandlerFile = undefined; //сбросить указатель на файл
+        }
+        this._SD.DisconnectSD(); //размонтировать SD карту
     }
     /**
      * 
      */
     Phase2() {
-        /*-начать измерение "холодной" воды и соответственно температуры анализируемого  тела-*/
-        this._IdTimerPhase2 = setInterval(this.MeasurementsCoolWater.bind(this), this.TIME_PERIOD_COOL_WATER);
+        /*--сформировать одинарный звуковой сигнал--*/
+        analogWrite(this._Buz, 0.5, {freq: 3000}); //включить звуковой сигнал
+            setTimeout(()=>{ digitalWrite(this._Buz, 0); }, 500); //выключить звуковой сигнал
+        
+            /*-начать измерение "холодной" воды и соответственно температуры анализируемого  тела-*/
+        this._IdTimerPhase2 = setInterval(this.MeasurementCoolWater.bind(this), this.TIME_PERIOD_COOL_WATER);
     }
     /**
      * 
      */
     Phase3(){
+        /*--сформировать одинарный звуковой сигнал--*/
+        analogWrite(this._Buz, 0.5, {freq: 4000}); //включить звуковой сигнал
+            setTimeout(()=>{ digitalWrite(this._Buz, 0); }, 500); //выключить звуковой сигнал
+
         /*-начать измерение "горячей" воды и определения момента теплового баланса-*/
-        this._IdTimerPhase3 = setInterval(this.MeasurementsCoolWater.bind(this), this.TIME_PERIOD_HOT_WATER);
+        this._HandlerFile = E.openFile(this.NAME_DATA_FILE, 'a'); //открыть файл в режиме добавления
+        
+        this._IdTimerPhase3 = setInterval(this.MeasurementHotWater.bind(this), this.TIME_PERIOD_HOT_WATER);
+            console.log(`DEBUG>> START Phase3...`);
     }
     /**
      * 
      */
-    Logger() {
-        if (this.FlagStatusSD) {
-            let date = new Date(); //получить объект хранящий timestamp
-            let csv_str = date.getFullYear().toString() +
-                '.' +
-                date.getMonth().toString() +
-                '.' +
-                date.getDate().toString() +
-                ';' +
-                date.getHours() +
-                ':' +
-                date.getMinutes() +
-                ':' +
-                date.getSeconds() +
-                ';' +
-                this.SensTemp.CurTemp.toFixed(2) +
-                ';' +
-                '\n'; //получить полный год
-            this.FS.appendFileSync('Data.csv', csv_str);
-        } else {
-            clearTimeout(this.IdTimerLogger); //прекратить запись данных т.к. SD карта размонтирована
-        }
+    Run() {
+        this.MonitorPhase2Start(); //отслеживать кнопку запуска эксперимента
+        this.MonitorPhase3Start(); //отслеживать кнопку запуска эксперимента
     }
 }
 

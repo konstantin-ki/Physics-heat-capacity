@@ -35,14 +35,16 @@ class ClassBaseSDcard {
     constructor(_spiOpt, _csPin) {
         /* данную конструкцию конструкцию расскоментировать в случае скачивания проекта с гитхаба, в таком случае
            локальна библиотека будет недоступна*/
-        //this.ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
+        //this._ClassErrorAppUser = require('https://github.com/konstantin-ki/Physics-heat-capacity/blob/main/js/module/ModuleAppError.js'); //импортируем прикладной класс ошибок
         
-        this.ClassErrorAppUser = require('ModuleAppError');
+        /* DEBUG>> конструкция на момент написания программы не работает !
+        this._ClassAppError = require('ModuleAppError');
+        */
 
         /*проверить переданные аргументы на валидность*/
         if ( typeof(_csPin) === undefined ) {
-            throw new ClassErrorAppUser(ClassBaseSDcard.ERROR_MSG_ARG_NOT_DEFINED + ". Arg error: _csPin",
-                                        ClassBaseSDcard.ERROR_CODE_ARG_NOT_DEFINED);
+            throw new ClassAppError(ClassBaseSDcard.ERROR_MSG_ARG_NOT_DEFINED + 'Arg error: _csPin',
+                                    ClassBaseSDcard.ERROR_CODE_ARG_NOT_DEFINED);
         }
 
         this.SD = { IDbus: {}, CSpin: {} }; //хранит параметры физического интерфейса для подключения SD карты
@@ -140,13 +142,13 @@ class ClassBaseSDcard {
      */
     ViewListFiles() {
         if (this.FlagStatusSD) {
-            //*DEBUG*/console.log(this.FS.readdirSync()); //вывести список файлов в консоль
             return require("fs").readdirSync(); //вернуть список файлов/директорий
         } else {
             //выбросить исключение, SD карта размонтирована
-            throw new ClassErrorAppUser(ClassBaseSDcard.ERROR_MSG_SD_UNMOUNTED,
+            throw new ClassAppError(ClassBaseSDcard.ERROR_MSG_SD_UNMOUNTED,
                                         ClassBaseSDcard.ERROR_CODE_SD_UNMOUNTED);
         }
     }
 }
+
 exports = ClassBaseSDcard; //экспортируем класс, ВНИМАНИЕ - именно класс а не объект!
