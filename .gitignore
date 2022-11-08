@@ -2,8 +2,14 @@
 .vscode/*
 *.code-workspace
 Pro Git - Скотт Шакон, 2012.pdf
+#
+app-test-ClaccExportsA.js
+app-test-ClaccExportsB.js
 app-test-exception.js
 app-test-ClaccExportsA.js
 app-test-ClaccExportsB.js
 app-test-exports_1.js
 app-test-exports_2.js
+app-test-sd-logger.js
+index2.js
+index2.min.js
