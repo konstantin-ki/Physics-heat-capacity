@@ -14,16 +14,16 @@ class ClassBaseOneWire {
  * @constructor
  */
     constructor(){
-        this.OWbus = {}; //контейнер объектов-шин OW, пример записи OWbus поля OWbus.OW1 ={IDbus: new OneWire(), Used: true};
-        this.Pattern = 'OW'; //базовая часть всех ключей объектов-шин OW, полное название получается конкатенацией с текущим индексом
-        this.IndexBus = 1; //начальный индекс OW шин, полный индекс будет вида OW11, OW12, OW13 и т.д.
-        
-         //реализация паттерна синглтон
+        //реализация паттерна синглтон
         if (this.Instance) {
             return this.Instance;
         } else {
             ClassBaseOneWire.prototype.Instance = this;
         }
+        
+        this.OWbus = {}; //контейнер объектов-шин OW, пример записи OWbus поля OWbus.OW1 ={IDbus: new OneWire(), Used: true};
+        this.Pattern = 'OW'; //базовая часть всех ключей объектов-шин OW, полное название получается конкатенацией с текущим индексом
+        this.IndexBus = 1; //начальный индекс OW шин, полный индекс будет вида OW11, OW12, OW13 и т.д.
     }
     /**
      * @const

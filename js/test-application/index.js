@@ -607,7 +607,7 @@ class ClassLoggerHeatCapacity {
      */
     MeasurementCoolWater() {
         this._TempCool = this._SensTemp1.Temp; //считать температуру "холодной" воды
-            console.log(`DEBUG>> Temp cool water: ${this._TempCool.toFixed(2)}`);
+            console.log(`DEBUG>> TEMP: ${this._TempCool.toFixed(2)}`);
         
         ++this._CountCoolWater; //инкремент количества измерений температуры
         //отбрасываем первое измерение
@@ -744,7 +744,7 @@ class ClassLoggerHeatCapacity {
      * 
      */
     MonitorPhase2Start(){
-        setWatch(this.Phase2.bind(this), this._Btn2, {
+        setWatch(this.Phase2.bind(this), this._Btn1, {
             edge: "falling",
             debounce: 50,
             repeat: true
@@ -766,7 +766,7 @@ class ClassLoggerHeatCapacity {
      * 
      */
     MonitorPhase3Start(){
-        setWatch(this.Phase3.bind(this), this._Btn1, {
+        setWatch(this.Phase3.bind(this), this._Btn2, {
             edge: "falling",
             debounce: 50,
             repeat: true
@@ -820,9 +820,9 @@ class ClassLoggerHeatCapacity {
 
 
 Terminal.setConsole();
-console.log('DERBUG>> START PROGRAMM');
-console.log();
 
+
+let PixelSysConf = new ClassPixeljsSysConf();
 let PixelNRFmanagement = new ClassPixelNRFmanagement(); 
 let OWbus = new ClassBaseOneWire(); 
 let SPIbus = {}; 
@@ -841,5 +841,10 @@ let Logger = new ClassLoggerHeatCapacity({mosi:D7, miso:D2, sck:A5},
                                          D12,           /* btn2 */
                                          A1,            /* none */
                                          A0             /* buz */);
+
+
+console.log();
 Logger.Run();
 LED1.write(1);
+PixelSysConf.ClearLCD();
+console.log('DERBUG>> START PROGRAMM');

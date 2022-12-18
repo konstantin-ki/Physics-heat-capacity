@@ -75,9 +75,9 @@ class ClassLoggerHeatCapacity {
     /** @const @type {number} */
     get TEMP_SENS_RESOLUTION() { return 12; } //разрешения в bit датчика DS18B20
     /** @const @type {number} */
-    get TIME_PERIOD_COOL_WATER() { return 1000; } //период (ms) замера температуры "холодной" воды
+    get TIME_PERIOD_COOL_WATER() { return 500; } //период (ms) замера температуры "холодной" воды
     /** @const @type {number} */
-    get COUNT_MEASUREMENTS_COOL_WATER() { return 11; }  //количество замеров холодной воды
+    get COUNT_MEASUREMENTS_COOL_WATER() { return 5; }  //количество замеров холодной воды
     /** @const @type {number} */
     get TIME_PERIOD_HOT_WATER() { return 5000; }  //период (ms) замера температуры "горячей" воды
     /** @const @type {number} */
@@ -93,7 +93,7 @@ class ClassLoggerHeatCapacity {
      */
     MeasurementCoolWater() {
         this._TempCool = this._SensTemp1.Temp; //считать температуру "холодной" воды
-            console.log(`DEBUG>> Temp cool water: ${this._TempCool.toFixed(2)}`);
+            console.log(`DEBUG>> TEMP: ${this._TempCool.toFixed(2)}`);
         
         ++this._CountCoolWater; //инкремент количества измерений температуры
         //отбрасываем первое измерение
@@ -230,7 +230,7 @@ class ClassLoggerHeatCapacity {
      * 
      */
     MonitorPhase2Start(){
-        setWatch(this.Phase2.bind(this), this._Btn2, {
+        setWatch(this.Phase2.bind(this), this._Btn1, {
             edge: "falling",
             debounce: 50,
             repeat: true
@@ -252,7 +252,7 @@ class ClassLoggerHeatCapacity {
      * 
      */
     MonitorPhase3Start(){
-        setWatch(this.Phase3.bind(this), this._Btn1, {
+        setWatch(this.Phase3.bind(this), this._Btn2, {
             edge: "falling",
             debounce: 50,
             repeat: true
