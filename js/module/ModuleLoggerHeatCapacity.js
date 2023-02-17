@@ -15,7 +15,7 @@ class ClassLoggerHeatCapacity {
     /**
      * @constructor
      * @param {*} _spiPin 
-     * @param {*} _csPin 
+     * @param {*} _csPin
      * @param {*} _owBusPin1    - {OWpin: <Pin>} объект содержащий порт на котором будет работать датчик
      * @param {*} _owBusPin2    - {OWpin: <Pin>} объект содержащий порт на котором будет работать датчик
      * @param {*} _owBusPin3    - {OWpin: <Pin>} объект содержащий порт на котором будет работать датчик
@@ -52,12 +52,8 @@ class ClassLoggerHeatCapacity {
         this._CountWriteFile = 0; //линейно-нарастающий счетчик записей в файле
 
         this._TempCool = 25; //поле хранит температуру "холодной" воды
-        this._TempTermos1 = [];
-        //this._TempTermos1Prev = 0; //поле хранит температуру термоса 1 предыдущего измерения
-        //this._TempTermos1Curr = 70; //поле хранит температуру термоса 1 текущего измерения
-        //this._TempTermos2Prev = 0; //поле хранит температуру термоса 2 предыдущего измерения
-        //this._TempTermos2Curr = 70; //поле хранит температуру термоса 2 текущего измерения
-
+        this._TempTermos1 = []; //поле требуется для работы метода MeasurementHotWater
+        
         this._HandlerFile = undefined; //указатель на файл с данными измерениями
 
         try {
@@ -84,6 +80,8 @@ class ClassLoggerHeatCapacity {
     get HEAT_LOSS_CONST_THERMOS_1() { return 0.00089; } //константа тепловых потерь первого термоса
     /** @const @type {number} */
     get HEAT_LOSS_CONST_THERMOS_2() { return 0.00046; } //константа тепловых потерь второго термоса
+    /** @const @type {number} */
+    get COUNT_MEASUREMENTS_HOT_WATER() { return 120; } //количество считываний до начала анализа темплоемкости
     /** @const @type {string} */
     get NAME_DATA_FILE() { return 'data.csv'; } //константа тепловых потерь второго термоса
     /*******************************************END CONST******************************************/
@@ -169,18 +167,18 @@ class ClassLoggerHeatCapacity {
             ++this._CountWriteFile; //индексировать счетчик записей в файле
         /*
             Проверка условия завершения эксперимента. Первым шагом выполняется проверка количества
-            измерений выполненных на текущий момент. Если 61 и более то выполняются следующие шаги.
-            Обоснование числа 61: при исследовании величины тепловых потерь термосов, было установлено
-            что измерение величины dT/dt, надежно определяется примерно на интервале времени 5 минут
+            измерений выполненных на текущий момент. Если X и более то выполняются следующие шаги.
+            Обоснование числа X+1: при исследовании величины тепловых потерь термосов, было установлено
+            что измерение величины dT/dt, надежно определяется примерно на интервале времени 3-5 минут
             и более. На момент проведения первых экспериментов был установлен "малый" интервал
             измерений равный 5 секунд, что позволяет оперативно отслеживать и фиксировать температуру
-            но не позволяет "почуствовать" изменения dT/dt между измерениями, то был введен "большой"
-            интервал измерений равный 5 мин или 61 измеерние, т.к. интервал между первым и последним
-            измерениям в таком случае будет равен  N-1 * Tмал (61-1 * 5сек = 300 сек = 5 мин)
+            но не позволяет "почувствовать" изменения dT/dt между измерениями, то был введен "большой"
+            интервал измерений равный ~5 мин или X+1 измерение, т.к. интервал между первым и последним
+            измерениям в таком случае будет равен  N-1 * Tмал (пример 61-1 * 5сек = 300 сек = 5 мин)
         */
-        if( this._TempTermos1.length > 120 ){
-            if( this._TempTermos1.length == 121 ){
-                /* Cформировать одинарный звуковой сигнал */
+        if( this._TempTermos1.length > this.COUNT_MEASUREMENTS_HOT_WATER ){
+            if( this._TempTermos1.length == this.COUNT_MEASUREMENTS_HOT_WATER + 1 ){
+                /* Сформировать одинарный звуковой сигнал */
                 analogWrite(this._Buz, 0.5, {freq: 4000}); //включить звуковой сигнал
                     setTimeout(()=>{ digitalWrite(this._Buz, 0); }, 200); //выключить звуковой сигнал
             }
@@ -189,7 +187,9 @@ class ClassLoggerHeatCapacity {
                 скоростью падения температуры
             */
             let length = this._TempTermos1.length; //текущая длина массива температур воды термоса
-                loss_temperature = (this._TempTermos1[length-121] - this._TempTermos1[length-1])/(this.TIME_PERIOD_HOT_WATER*120);
+                loss_temperature = (this._TempTermos1[length-(this.COUNT_MEASUREMENTS_HOT_WATER + 1)]
+                                    - this._TempTermos1[length-1])
+                                    / (this.TIME_PERIOD_HOT_WATER * this.COUNT_MEASUREMENTS_HOT_WATER);
                 loss_delta = Math.abs(loss_temperature) - this.HEAT_LOSS_CONST_THERMOS_2;
                     console.log(`DEBUG>> ______TEMP LOSS: ${loss_temperature}`);
                     console.log(`DEBUG>> DELTA TEMP LOSS: ${loss_delta}`);
@@ -220,7 +220,7 @@ class ClassLoggerHeatCapacity {
                         }
                         beep_flag = !beep_flag;
                         setTimeout(beep_func, 150); //взвести очередное исполнение setTimeout()
-                    } 
+                    }
                 };
                 setTimeout(beep_func, 150);
             }

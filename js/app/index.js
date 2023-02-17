@@ -486,45 +486,6 @@ class ClassPixelNRFmanagement {
     }
 }
 
-class ClassPixeljsSysConf {
-    constructor() {
-        
-
-        
-        E.setTimeZone(4); 
-    }
-    /**
-     * Метод геттер <DateCurrent> возвращает тестовую строку текущей Дата/Время
-     */
-    get DateCurrent() {
-        return new Date().toString();
-    }
-    /**
-     * Метод сеттер <DateCurrent> устанавливает текущую Дата/Время
-     */
-    set DateCurrent(_argVal) {
-        let temp_date = (_argVal) => {
-            new Date(_argVal[0], _argVal[1], _argVal[2], _argVal[3], _argVal[4], _argVal[5], 0); 
-
-        };
-
-        temp_date(_argVal);
-    }
-    /**
-     * Метод геттер DateCurrentNow возвращает текущее время в миллисекундах 
-     */
-    get DateCurrentNow() {
-        return new Date().now();
-    }
-    /**
-     * Метод очищает экран LCD при старте программы
-     */
-    ClearLCD() {
-        g.clear(); 
-        g.flip(); 
-    }
-}
-
 class ClassLoggerHeatCapacity {
     /**
      * @constructor

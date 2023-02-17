@@ -1,6 +1,6 @@
-# Physics-heat-capacity
-A project on the physics course of the 7th grade school course.
-The purpose of the project is to automate the process of measuring body heat capacity.
+# PHYSICS-HEAT-CAPACITY
+A project on the course of physics and robotics, a school course of the 7th grade.
+The aim of the project is to develop a stand for automated measurement of the heat capacity of a solid.
 #
-Проект по курсу физики школьного курса 7 класса.
-Цель проекта - автоматизация процесса измерения теплоемкости тела.
+Проект по курсу физики и робототехнике, школьного курса 7 класса.
+Цель проекта - разработка стенда для автоматизированного измерения теплоемкости твердого тела.

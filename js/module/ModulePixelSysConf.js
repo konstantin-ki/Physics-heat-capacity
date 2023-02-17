@@ -13,15 +13,13 @@ class ClassPixelSysConf {
         return new Date().toString();
     }
     /**
-     * Метод сеттер <DateCurrent> устанавливает текущую Дата/Время
+     * Сеттер устанавливает текущую Дата/Время
      */
     set DateCurrent(_argVal) {
-        let temp_date = (_argVal) => {
+        let date = (_argVal) => {
             new Date(_argVal[0], _argVal[1], _argVal[2], _argVal[3], _argVal[4], _argVal[5], 0); //инициализировать системное время
-
         };
-
-        temp_date(_argVal);
+        date(_argVal);
     }
     /**
      * Метод геттер DateCurrentNow возвращает текущее время в миллисекундах 

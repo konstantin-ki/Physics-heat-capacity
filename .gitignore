@@ -1,19 +1,6 @@
 # строки начинающиеся на # - это комментарии, они не учитываются
 .vscode/*
 *.code-workspace
-Pro Git - Скотт Шакон, 2012.pdf
 #
-Диаграмма синхронизации данных через GiiHub и OneDrive.graphml
-#
-Презентация- стенд для автоматизированного определения теплоемкости тела.pptx
-#
-app-test-ClaccExportsA.js
-app-test-ClaccExportsB.js
-app-test-exception.js
-app-test-ClaccExportsA.js
-app-test-ClaccExportsB.js
-app-test-exports_1.js
-app-test-exports_2.js
-app-test-sd-logger.js
-index2.js
-index2.min.js
+app-test*.js
+index.min.js
