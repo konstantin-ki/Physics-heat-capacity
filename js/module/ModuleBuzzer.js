@@ -10,7 +10,8 @@ class ClassTypeBuzzer {
      * @param {Object} _buzPin      - Pin на котором сидит buzzer
      */
     constructor(_buzPin) {
-        this._BuzPin = undefined;
+        this.name = 'ClassTypeBuzzer'; //переопределяем имя типа
+        this._BuzPin = undefined; 
 
         this.Init(_buzPin); //инициализировать поля
     }
@@ -28,20 +29,20 @@ class ClassTypeBuzzer {
      * Константа ERROR_MSG_ARG_VALUE определяет сообщение ошибки, которая может произойти
      * в случае передачи не валидных данных
      */
-    static get ERROR_MSG_ARG_VALUE() { return 'ERROR>> invalid data ClassTypeBuzzerPlay'; }
+    static get ERROR_MSG_ARG_VALUE() { return `ERROR>> invalid data. ClassID: ${this.name}`; }
     /*******************************************END CONST****************************************/
     /**
      * Метод инициализирует поля объекта
      */
     Init(_buzPin) {        
         /*проверить переданные аргументы на валидность*/
-        if (!(typeof (_buzPin) === 'undefined')) {
-           throw new ClassAppError(ClassTypeBuzzer.ERROR_CODE_ARG_VALUE,
-                                     ClassTypeBuzzer.ERROR_MSG_ARG_VALUE);
+        if ((typeof (_buzPin) === 'undefined')) {
+           throw new ClassAppError(ClassTypeBuzzer.ERROR_MSG_ARG_VALUE ,
+                                   ClassTypeBuzzer.ERROR_CODE_ARG_VALUE);
         }
         if(!(_buzPin instanceof Pin)) {
-            throw new ClassAppError(ClassTypeBuzzer.ERROR_CODE_ARG_VALUE,
-                                     ClassTypeBuzzer.ERROR_MSG_ARG_VALUE);
+            throw new ClassAppError(ClassTypeBuzzer.ERROR_MSG_ARG_VALUE,
+                                     ClassTypeBuzzer.ERROR_CODE_ARG_VALUE);
         }
         /*инициализировать поля*/
         this._BuzPin = _buzPin;
@@ -62,6 +63,7 @@ class ClassTypeBuzzerPlay {
      * @param {number} _prop        - пропорция ЗВУК/ТИШИНА на одном периоде [0<x<=1]
      */
     constructor(_pulseDur, _numRep, _freq, _prop) {
+        this.name = 'ClassTypeBuzzerPlay'; //переопределяем имя типа
         this._PulseDur = undefined;
         this._NumRep = undefined;
         this._Freq = undefined;
@@ -83,15 +85,15 @@ class ClassTypeBuzzerPlay {
      * Константа ERROR_MSG_ARG_VALUE определяет сообщение ошибки, которая может произойти
      * в случае передачи в конструктор не валидных данных
      */
-    static get ERROR_MSG_ARG_VALUE() { return 'ERROR>> invalid data ClassTypeBuzzerPlay'; }
+    static get ERROR_MSG_ARG_VALUE() { return `ERROR>> invalid data. ClassID: ${this.name}`; }
     /*******************************************END CONST****************************************/
     /**
      * Метод инициализирует поля объекта
      */
     Init(_pulseDur, _numRep, _freq, _prop) {
-        let pulsedur = _pulseDur || 50;
+        let pulsedur = _pulseDur || 100;
         let numrep = _numRep || 1;
-        let freq = _freq || 4500;
+        let freq = _freq || 4000;
         let prop = _prop || 0.5;
         
         /*проверить переданные аргументы  на валидность*/
@@ -99,14 +101,14 @@ class ClassTypeBuzzerPlay {
             !(typeof (numrep) === 'number')     ||
             !(typeof (freq) === 'number')       ||
             !(typeof (prop) === 'number')       ||
-            !(Number.isInteger(_pulseDur))      ||
+            !(Number.isInteger(pulsedur))       ||
             !(Number.isInteger(numrep))         ||
             !(Number.isInteger(freq))) {
-           throw new ClassAppError(ClassTypeBuzzerPlay.ERROR_CODE_ARG_VALUE,
-                                   ClassTypeBuzzerPlay.ERROR_MSG_ARG_VALUE);
+                    throw new ClassAppError(ClassTypeBuzzerPlay.ERROR_MSG_ARG_VALUE,
+                                            ClassTypeBuzzerPlay.ERROR_CODE_ARG_VALUE);
         }
         if (pulsedur<50) {pulsedur=50;} //нормализовать значение длительности импульса звучания
-        if (prop<0 || prop>1) {prop=1;}
+        if (prop<0 || prop>1) {prop=0.5;}
         
         /*инициализировать поля*/
         this._PulseDur = pulsedur;
@@ -125,11 +127,11 @@ class ClassBuzzer {
      * @param {Object} _opt   - объект класса ClassTypeBuzzer
      */
     constructor(_opt) {
-        
+        this.name = 'ClassBuzzer'; //переопределяем имя типа
         /*проверить переданные аргументы на валидность*/
         if(!(_opt instanceof ClassTypeBuzzer)) {
-            throw new ClassAppError(ClassBuzzer.ERROR_CODE_ARG_VALUE,
-                                    ClassBuzzer.ERROR_MSG_ARG_VALUE);
+            throw new ClassAppError(ClassBuzzer.ERROR_MSG_ARG_VALUE ,
+                                    ClassBuzzer.ERROR_CODE_ARG_VALUE);
         }
         this._BuzPin = _opt._BuzPin; 
     }
@@ -147,7 +149,7 @@ class ClassBuzzer {
      * Константа ERROR_MSG_ARG_VALUE определяет сообщение ошибки, которая может произойти
      * в случае передачи не валидных данных
      */
-    static get ERROR_MSG_ARG_VALUE() { return 'ERROR>> invalid data ClassTypeBuzzerPlay'; }
+    static get ERROR_MSG_ARG_VALUE() { return `ERROR>> invalid data. ClassID: ${this.name}`; }
     /*******************************************END CONST****************************************/
     /**
      * @method
@@ -157,14 +159,14 @@ class ClassBuzzer {
     PlayBeep(_opt) {
         /*проверить переданные аргументы на валидность*/
         if(!(_opt instanceof ClassTypeBuzzerPlay)) {
-            throw new ClassAppError(ClassBuzzer.ERROR_CODE_ARG_VALUE,
-                                    ClassBuzzer.ERROR_MSG_ARG_VALUE);
+            throw new ClassAppError(ClassBuzzer.ERROR_MSG_ARG_VALUE,
+                                    ClassBuzzer.ERROR_CODE_ARG_VALUE);
         }
         
         /*-сформировать двойной звуковой сигнал */
-        let Thi = opt._PulseDur; //длительность звукового сигнала
-        let Tlo = _opt._PulseDur*(1-_opt._Proportions)/_opt._Proportions; //длительность паузы
-        let beep_count = _opt._NumRep; //переменная помогает организовать двойной звуковой сигнал
+        let Thi = _opt._PulseDur; //длительность звукового сигнала
+        let Tlo = Math.floor(_opt._PulseDur*(1-_opt._Proportions)/_opt._Proportions); //длительность паузы
+        let beep_count = _opt._NumRep*2; //количество полупериодов(!) звукового сигнала
         let beep_flag = true;
         analogWrite(this._BuzPin, 0.5, { freq : _opt._Freq }); //включить звуковой сигнал
         let beep_func = ()=>{
@@ -172,11 +174,12 @@ class ClassBuzzer {
             if (beep_count > 0) {
                 if (beep_flag) {
                     digitalWrite(this._BuzPin, beep_flag); //выключить звук
+                        setTimeout(beep_func, Tlo); //взвести setTimeout
                 } else {
                     analogWrite(this._BuzPin, 0.5, {freq: _opt._Freq}); //включить звук
+                        setTimeout(beep_func, Thi); //взвести setTimeout
                 }
                 beep_flag = !beep_flag;
-                setTimeout(beep_func, Tlo); //взвести setTimeout
             }
         }
         setTimeout(beep_func, Thi);
