@@ -2,7 +2,7 @@
  * @class
  * Класс ClassAppError наследует и расширяет возможности базового класса ошибок.
  */
-class ClassAppError extends Error {
+class ClassAppError {
     constructor(_message, _code) {
         //super(_message);
         this.name = 'ClassAppError'; //переопределяем имя типа
