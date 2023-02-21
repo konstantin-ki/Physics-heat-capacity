@@ -107,7 +107,7 @@ class ClassBaseDS18B20 {
      * @param {Object}   _opt        1 - объект с произвольными параметрами
      */
     Info(_opt){
-        console.log(`INFO>> Stage: ${_opt.Stage}, Error: ${_opt.Error}`);
+        console.log(`INFO>> Stage: ${_opt.Stage}, Msg: ${_opt.Error}`);
     }
     /**
      * @method
