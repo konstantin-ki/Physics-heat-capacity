@@ -193,4 +193,6 @@ class ClassBuzzer {
     }
 }
 
-exports = ClassBuzzer;
+exports.classtypebuzzer     = ClassTypeBuzzer;
+exports.classtypebuzzerplay = ClassTypeBuzzerPlay;
+exports.classbuzzer         = ClassBuzzer;
