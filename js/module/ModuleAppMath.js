@@ -6,7 +6,7 @@ function AddIsInteger() {
     /**
      * @param {number} it  - проверяемое число
      */
-    Number.isInteger = (it) => {isFinite(it) && Math.floor(it) === it};
+    Number.isInteger = (it) => {return isFinite(it) && Math.floor(it) === it};
 }
 
-exports = AddIsInteger;
+exports.is = AddIsInteger;
