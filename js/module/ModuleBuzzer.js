@@ -1,3 +1,6 @@
+//экспортировать объект прикладных ошибок
+const err = require('https://raw.githubusercontent.com/konstantin-ki/Physics-heat-capacity/ver2/js/module/ModuleAppError.js');
+
 /**
  * @class
  * Класс ClassTypeBuzzer обеспечивает прикладной тип для конструктора класса ClassBuzzer.
@@ -37,12 +40,14 @@ class ClassTypeBuzzer {
     Init(_buzPin) {        
         /*проверить переданные аргументы на валидность*/
         if ((typeof (_buzPin) === 'undefined')) {
-           throw new ClassAppError(ClassTypeBuzzer.ERROR_MSG_ARG_VALUE ,
-                                   ClassTypeBuzzer.ERROR_CODE_ARG_VALUE);
+            
+            throw new err(ClassTypeBuzzer.ERROR_MSG_ARG_VALUE ,
+                          ClassTypeBuzzer.ERROR_CODE_ARG_VALUE);
         }
         if(!(_buzPin instanceof Pin)) {
-            throw new ClassAppError(ClassTypeBuzzer.ERROR_MSG_ARG_VALUE,
-                                     ClassTypeBuzzer.ERROR_CODE_ARG_VALUE);
+            
+            throw new err(ClassTypeBuzzer.ERROR_MSG_ARG_VALUE,
+                          ClassTypeBuzzer.ERROR_CODE_ARG_VALUE);
         }
         /*инициализировать поля*/
         this._BuzPin = _buzPin;
@@ -104,8 +109,9 @@ class ClassTypeBuzzerPlay {
             !(Number.isInteger(pulsedur))       ||
             !(Number.isInteger(numrep))         ||
             !(Number.isInteger(freq))) {
-                    throw new ClassAppError(ClassTypeBuzzerPlay.ERROR_MSG_ARG_VALUE,
-                                            ClassTypeBuzzerPlay.ERROR_CODE_ARG_VALUE);
+                
+                throw new err(ClassTypeBuzzerPlay.ERROR_MSG_ARG_VALUE,
+                              ClassTypeBuzzerPlay.ERROR_CODE_ARG_VALUE);
         }
         if (pulsedur<50) {pulsedur=50;} //нормализовать значение длительности импульса звучания
         if (prop<0 || prop>1) {prop=0.5;}
@@ -130,8 +136,9 @@ class ClassBuzzer {
         this.name = 'ClassBuzzer'; //переопределяем имя типа
         /*проверить переданные аргументы на валидность*/
         if(!(_opt instanceof ClassTypeBuzzer)) {
-            throw new ClassAppError(ClassBuzzer.ERROR_MSG_ARG_VALUE ,
-                                    ClassBuzzer.ERROR_CODE_ARG_VALUE);
+            
+            throw new err(ClassBuzzer.ERROR_MSG_ARG_VALUE ,
+                          ClassBuzzer.ERROR_CODE_ARG_VALUE);
         }
         this._BuzPin = _opt._BuzPin; 
     }
@@ -185,3 +192,5 @@ class ClassBuzzer {
         setTimeout(beep_func, Thi);
     }
 }
+
+exports = ClassBuzzer;
