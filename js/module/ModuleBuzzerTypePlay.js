@@ -16,7 +16,7 @@ class ClassBuzzerTypePlay {
      * @param {number} _prop        - пропорция ЗВУК/ТИШИНА на одном периоде [0<x<=1]
      */
     constructor(_pulseDur, _numRep, _freq, _prop) {
-        this.name = 'ClassTypeBuzzerPlay'; //переопределяем имя типа
+        this.name = 'ClassBuzzerTypePlay'; //переопределяем имя типа
         this._PulseDur = undefined;
         this._NumRep = undefined;
         this._Freq = undefined;

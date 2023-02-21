@@ -13,7 +13,7 @@ class ClassBuzzerType {
      * @param {Object} _buzPin      - Pin на котором сидит buzzer
      */
     constructor(_buzPin) {
-        this.name = 'ClassTypeBuzzer'; //переопределяем имя типа
+        this.name = 'ClassBuzzerType'; //переопределяем имя типа
         this._BuzPin = undefined; 
 
         this.Init(_buzPin); //инициализировать поля
