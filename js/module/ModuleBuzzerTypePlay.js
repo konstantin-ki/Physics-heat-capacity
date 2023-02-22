@@ -1,6 +1,3 @@
-//экспортировать объект прикладных ошибок
-const err = require('https://raw.githubusercontent.com/konstantin-ki/Physics-heat-capacity/ver2/js/module/ModuleAppError.js');
-
 /**
  * @class
  * Класс ClassBuzzerTypePlay обеспечивает прикладной тип для методов класса ClassBuzzer.
