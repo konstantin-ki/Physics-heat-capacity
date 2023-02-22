@@ -1,3 +1,6 @@
+const ClassBuzzerType       = require('https://raw.githubusercontent.com/konstantin-ki/Physics-heat-capacity/ver2/js/module/ModuleBuzzerType.js');
+const ClassBuzzerTypePlay   = require('https://raw.githubusercontent.com/konstantin-ki/Physics-heat-capacity/ver2/js/module/ModuleBuzzerTypePlay.js');
+
 /**
  * @class
  * Класс ClassBuzzer реализует логику работы пьезодатчика
