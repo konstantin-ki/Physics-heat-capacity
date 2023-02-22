@@ -29,7 +29,7 @@ class ClassBuzzerType {
      * Константа ERROR_MSG_ARG_VALUE определяет сообщение ошибки, которая может произойти
      * в случае передачи не валидных данных
      */
-    static get ERROR_MSG_ARG_VALUE() { return `ERROR>> invalid data. ClassID: ${this.name}`; }
+    static get ERROR_MSG_ARG_VALUE() { return `ERROR>> invalid data. ClassID: ${this.name}`;}
     /*******************************************END CONST****************************************/
     /**
      * Метод инициализирует поля объекта
