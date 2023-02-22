@@ -13,11 +13,11 @@ class ClassBuzzer {
     constructor(_opt) {
         this.name = 'ClassBuzzer'; //переопределяем имя типа
         /*проверить переданные аргументы на валидность*/
-        if(!(_opt instanceof ClassBuzzerType)) {
+        // if(!(_opt instanceof ClassBuzzerType)) {
             
-            throw new err(ClassBuzzer.ERROR_MSG_ARG_VALUE ,
-                          ClassBuzzer.ERROR_CODE_ARG_VALUE);
-        }
+        //     throw new err(ClassBuzzer.ERROR_MSG_ARG_VALUE ,
+        //                   ClassBuzzer.ERROR_CODE_ARG_VALUE);
+        // }
         this._BuzPin = _opt._BuzPin; 
     }
     /*******************************************CONST********************************************/
