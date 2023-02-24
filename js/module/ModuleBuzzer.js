@@ -1,9 +1,8 @@
-const ClassBuzzerType       = require('https://raw.githubusercontent.com/konstantin-ki/Physics-heat-capacity/ver2/js/module/ModuleBuzzerType.js');
-const ClassBuzzerTypePlay   = require('https://raw.githubusercontent.com/konstantin-ki/Physics-heat-capacity/ver2/js/module/ModuleBuzzerTypePlay.js');
-
 /**
  * @class
- * Класс ClassBuzzer реализует логику работы пьезодатчика
+ * Класс ClassBuzzer реализует логику работы пьезодатчика.
+ * Для работы класса требуется подключить модуль ModuleAppMath, где 
+ * добавляется функция проверки
  */
 class ClassBuzzer {
     /**
@@ -13,11 +12,11 @@ class ClassBuzzer {
     constructor(_opt) {
         this.name = 'ClassBuzzer'; //переопределяем имя типа
         /*проверить переданные аргументы на валидность*/
-        // if(!(_opt instanceof ClassBuzzerType)) {
+        if(!(_opt instanceof ClassBuzzerType)) {
             
-        //     throw new err(ClassBuzzer.ERROR_MSG_ARG_VALUE ,
-        //                   ClassBuzzer.ERROR_CODE_ARG_VALUE);
-        // }
+            throw new err(ClassBuzzer.ERROR_MSG_ARG_VALUE ,
+                          ClassBuzzer.ERROR_CODE_ARG_VALUE);
+        }
         this._BuzPin = _opt._BuzPin; 
     }
     /*******************************************CONST********************************************/
@@ -46,8 +45,7 @@ class ClassBuzzer {
         if(!(_opt instanceof ClassBuzzerTypePlay)) {
             throw new ClassAppError(ClassBuzzer.ERROR_MSG_ARG_VALUE,
                                     ClassBuzzer.ERROR_CODE_ARG_VALUE);
-        }
-        
+        }        
         /*-сформировать двойной звуковой сигнал */
         let Thi = _opt._PulseDur; //длительность звукового сигнала
         let Tlo = Math.floor(_opt._PulseDur*(1-_opt._Proportions)/_opt._Proportions); //длительность паузы
